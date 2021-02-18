@@ -4,6 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_wifi.h"
+#include "esp_wifi_types.h"
 #include "esp_event.h"
 #include "wifi_aplist.h"
 
@@ -23,6 +24,7 @@ typedef enum {
 
 typedef enum {
   WIFI_OFF,
+  WIFI_SNIFFER,
   WIFI_SCANNER,
   WIFI_AP,
   WIFI_STA
@@ -41,6 +43,7 @@ typedef struct tWifiController {
 
   /* WiFi controller mode. */
   wifi_controller_mode_t mode;
+  TaskHandle_t current_task_handle;
 
   /* WiFi controller AP list. */
   wifi_aplist_t ap_list;

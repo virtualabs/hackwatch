@@ -1,7 +1,9 @@
 #ifndef __INC_WIFI_AP_H
 #define __INC_WIFI_AP_H
 
-#define WIFI_APLIST_MAX_NUMBER 200
+#define WIFI_APLIST_MAX_NUMBER 30
+#define WIFI_AP_FRESHNESS_MAX   255
+#define WIFI_AP_FRESHNESS_OLD   100
 
 #include "esp_wifi.h"
 
@@ -14,6 +16,7 @@ typedef struct t_wifi_ap {
   wifi_auth_mode_t auth_mode;
   wifi_auth_mode_t pw_cipher;
   wifi_cipher_type_t gp_cipher;
+  uint8_t freshness;
 } wifi_ap_t;
 
 typedef struct {

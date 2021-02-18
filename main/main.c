@@ -9,18 +9,25 @@
 #include "twatch.h"
 #include "img.h"
 #include "digits.h"
+/*
 #include "skull.h"
 #include "cat.h"
 #include "doh.h"
+*/
+#include "cat.h"
+
 #include "ui/ui.h"
 #include "ui/button.h"
 #include "ui/label.h"
 #include "ui/image.h"
+#include "ui/listbox.h"
+#include "ui/progress.h"
 #include "font/font16.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
 
 #include "wifi/wifi.h"
+#include "wifi/wifiscan.h"
 
 #define I2S_NUM 0
 #define SAMPLE_RATE 44100
@@ -166,8 +173,9 @@ void wifi_test(void *parameter)
   /* reset channels RSSI. */
   init_measures();
 
+  #if 0
   g_state = SCANNER_IDLE;
-
+  
   ESP_ERROR_CHECK(esp_event_loop_create_default());
   esp_event_handler_instance_t instance_any_id;
   esp_event_handler_instance_t instance_got_ip;
@@ -178,6 +186,7 @@ void wifi_test(void *parameter)
     NULL,
     &instance_any_id
   ));
+  #endif
 
   k=0;
   while (1)
@@ -272,9 +281,14 @@ int draw_wifi_stats(tile_t *p_tile)
 
 void main_ui(void *parameter)
 {
-  widget_image_t image;
+  widget_image_t image,image2;
   image_t *cat;
-  tile_t main_tile, cat_tile;
+  tile_t main_tile, cat_tile, network_tile;
+  widget_label_t wifi0, wifi1, wifi2;
+  widget_listbox_t list;
+  widget_button_t btn;
+  widget_progress_t progress;
+
 
   /* Load cat image. */
   cat = load_image(img_cat);
@@ -283,8 +297,31 @@ void main_ui(void *parameter)
   tile_set_drawfunc(&main_tile, draw_wifi_stats);
 
   tile_init(&cat_tile, NULL);
-  widget_image_init(&image, &cat_tile, 10, 10, 200, 200, cat);
-  tile_link_right(&cat_tile, &main_tile);
+  //widget_image_init(&image, &cat_tile, 10, 10, 200, 200, cat);
+  widget_image_init(&image2, NULL, 5, 125, 200, 20, cat);
+
+  tile_init(&network_tile, NULL);
+  widget_label_init(&wifi0, NULL, 0, 0, 200, 32, "M");
+  widget_label_init(&wifi1, NULL, 0, 0, 200, 32, "Tagadatsointsoin");
+  widget_label_init(&wifi2, NULL, 0, 0, 200, 32, "Hackme!");
+
+  widget_progress_init(&progress, NULL, 5, 150, 150, 20);
+  widget_progress_set_value(&progress, 25);
+
+  /* Test container. */
+  widget_button_init(&btn, NULL, 5, 0, 120, 800,"Test");
+  widget_listbox_init(&list, &network_tile, 21, 20, 200, 200);
+  widget_listbox_add(&list, (widget_t *)&wifi0);
+  widget_listbox_add(&list, (widget_t *)&wifi1);
+  widget_listbox_add(&list, (widget_t *)&wifi2);
+  widget_listbox_add(&list, (widget_t *)&btn);
+  widget_listbox_add(&list, (widget_t *)&progress);
+
+  widget_listbox_remove(&list, (widget_t *)&wifi2);
+
+  tile_link_right(&cat_tile, &network_tile);
+  tile_link_right(&network_tile, &main_tile);
+  tile_link_right(&main_tile, wifiscan_get_tile());
   
   ui_select_tile(&cat_tile);
 
@@ -327,8 +364,12 @@ void app_main(void)
 
   /* Initialize WiFi controller. */
   wifi_ctrl_init();
+  wifi_set_mode(WIFI_SNIFFER);
 
-  xTaskCreate(wifi_test, "wifi_test", 10000, NULL, 1, NULL);
+  /* Initialize wifi scanner. */
+  wifiscan_init();
+
+  //xTaskCreate(wifi_test, "wifi_test", 10000, NULL, 1, NULL);
   xTaskCreate(main_ui, "main_ui", 10000, NULL, 1, NULL);
 
   

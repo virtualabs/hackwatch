@@ -11,6 +11,22 @@ ESP_EVENT_DEFINE_BASE(WIFI_CTRL_EVENT);
 
 wifi_controller_t g_wifi_ctrl;
 
+
+typedef struct {
+	unsigned frame_ctrl:16;
+	unsigned duration_id:16;
+	uint8_t addr1[6]; /* receiver address */
+	uint8_t addr2[6]; /* sender address */
+	uint8_t addr3[6]; /* filtering address */
+	unsigned sequence_ctrl:16;
+	uint8_t addr4[6]; /* optional */
+} wifi_ieee80211_mac_hdr_t;
+
+typedef struct {
+	wifi_ieee80211_mac_hdr_t hdr;
+	uint8_t payload[0]; /* network data ended with 4 bytes csum (CRC32) */
+} wifi_ieee80211_packet_t;
+
 void wifi_scanner_task(void *parameter);
 
 /******************************************************************
@@ -49,6 +65,137 @@ void wifi_disable()
 }
 
 
+/******************************************************************
+ *                             WIFI SNIFFER
+ *****************************************************************/
+
+const char *
+wifi_sniffer_packet_type2str(wifi_promiscuous_pkt_type_t type)
+{
+	switch(type) {
+	case WIFI_PKT_MGMT: return "MGMT";
+	case WIFI_PKT_DATA: return "DATA";
+	default:	
+	case WIFI_PKT_MISC: return "MISC";
+	}
+}
+
+/**
+ * wifi_sniffer_packet_cb()
+ * 
+ * @brief: Callback function that will be called for each received packet.
+ **/
+
+void wifi_sniffer_packet_cb(void* buff, wifi_promiscuous_pkt_type_t type)
+{
+  uint8_t pkt_type, pkt_subtype;
+  uint8_t dest[6], source[6], bssid[6];
+  char essid[32];
+  uint8_t *p_essid_tlv;
+  int essid_size;
+
+  if (type != WIFI_PKT_MGMT)
+    return;
+
+  const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff;
+  const wifi_ieee80211_packet_t *ipkt = (wifi_ieee80211_packet_t *)ppkt->payload;
+  const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;
+
+  /* Display information only about probe request. */
+
+  /* If this packet a probe request ? */
+  pkt_type = (hdr->frame_ctrl >> 2) & 0x03;
+  pkt_subtype = (hdr->frame_ctrl >> 4) & 0x0F;
+  printf("[sniffer] Type: %02x Subtype: %02x\r\n", pkt_type, pkt_subtype);
+
+  //printf("[sniffer] pkt type: %02x | pkt subtype: %02x\r\n", pkt_type, pkt_subtype);
+  if ((pkt_type == 0) && ((pkt_subtype == 0x04) || (pkt_subtype == 0x05)))
+  {
+    switch(pkt_subtype)
+    {
+      case 0x04:
+        /* Copy dest, source, and bssid MACs */
+        memcpy(dest, &hdr->addr1, 6);
+        memcpy(source, &hdr->addr2, 6);
+        memcpy(bssid, &hdr->addr3, 6);
+
+        /* Parse ESSID. */
+        p_essid_tlv = (uint8_t *)&hdr->addr4;
+        if (p_essid_tlv[0] == 0)
+        {
+          essid_size = p_essid_tlv[1];
+          memcpy(essid, &p_essid_tlv[2], essid_size);
+          essid[essid_size] = '\0';
+        }
+        else
+        {
+          essid[0] = '\0';
+        }
+
+        printf("[PROBE_REQ]-----------------------------\r\n");
+        printf(" DEST: %02x:%02x:%02x:%02x:%02x:%02x\r\n", dest[0], dest[1],dest[2],dest[3],dest[4],dest[5]);
+        printf("  SRC: %02x:%02x:%02x:%02x:%02x:%02x\r\n", source[0], source[1],source[2],source[3],source[4],source[5]);
+        printf("BSSID: %02x:%02x:%02x:%02x:%02x:%02x\r\n", bssid[0], bssid[1],bssid[2],bssid[3],bssid[4],bssid[5]);
+        printf("ESSID: %s\r\n", essid);
+        printf("----------------------------------------\r\n");
+        break;
+
+      case 0x05:
+        /* Copy dest, source, and bssid MACs */
+        memcpy(dest, &hdr->addr1, 6);
+        memcpy(source, &hdr->addr2, 6);
+        memcpy(bssid, &hdr->addr3, 6);
+        printf("[PROBE_RSP]-----------------------------\r\n");
+        printf(" DEST: %02x:%02x:%02x:%02x:%02x:%02x\r\n", dest[0], dest[1],dest[2],dest[3],dest[4],dest[5]);
+        printf("  SRC: %02x:%02x:%02x:%02x:%02x:%02x\r\n", source[0], source[1],source[2],source[3],source[4],source[5]);
+        printf("BSSID: %02x:%02x:%02x:%02x:%02x:%02x\r\n", bssid[0], bssid[1],bssid[2],bssid[3],bssid[4],bssid[5]);
+        printf("----------------------------------------\r\n");
+        break;
+
+      default:
+        break;
+    }
+  }
+
+
+}
+
+
+/**
+ * wifi_sniffer_disable()
+ * 
+ * @brief: disable sniffing mode.
+ **/
+
+void wifi_sniffer_disable(void)
+{
+  /* Disable promiscuous mode. */
+  esp_wifi_set_promiscuous(false);
+
+  /* Stop WiFi. */
+  if (g_wifi_ctrl.b_enabled)
+  {
+    wifi_disable();
+    g_wifi_ctrl.b_enabled = false;
+  }
+}
+
+
+/**
+ * wifi_sniffer_enable()
+ * 
+ * @brief: enable sniffing mode.
+ **/
+
+void wifi_sniffer_enable(void)
+{
+  ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_NULL) );
+  ESP_ERROR_CHECK( esp_wifi_start() );
+  //esp_wifi_set_channel(11, 0);
+  esp_wifi_set_promiscuous(true);
+  esp_wifi_set_promiscuous_rx_cb(wifi_sniffer_packet_cb);
+}
+
 
 /******************************************************************
  *                             WIFI SCANNER
@@ -69,7 +216,11 @@ void wifi_scanner_disable(void)
   if (g_wifi_ctrl.b_enabled)
   {
     wifi_disable();
+    g_wifi_ctrl.b_enabled = false;
   }
+
+  /* Stop our scanner task. */
+  vTaskDelete(g_wifi_ctrl.current_task_handle);
 }
 
 
@@ -99,7 +250,7 @@ void wifi_scanner_enable(void)
   g_wifi_ctrl.scan_config.scan_time.passive = 500;
 
   /* Start scanner. */
-  xTaskCreate(wifi_scanner_task, "wifi_scanner", 10000, NULL, 1, NULL);
+  xTaskCreate(wifi_scanner_task, "wifi_scanner", 10000, NULL, 1, &g_wifi_ctrl.current_task_handle);
 }
 
 
@@ -280,6 +431,11 @@ void wifi_set_mode(wifi_controller_mode_t mode)
       ESP_LOGD(TAG, "disabling scanner ...");
       wifi_scanner_disable();
       break;
+
+    case WIFI_SNIFFER:
+      ESP_LOGD(TAG, "disabling sniffer ...");
+      wifi_sniffer_disable();
+      break;
     
     default:
       break;
@@ -293,11 +449,16 @@ void wifi_set_mode(wifi_controller_mode_t mode)
       wifi_scanner_enable();
       break;
 
+    case WIFI_SNIFFER:
+      ESP_LOGD(TAG, "enabling sniffer ...");
+      wifi_sniffer_enable();
+      break;
+
     default:
       break;
   }
 
-  ESP_LOGD(TAG, "current moden is now %d", mode);
+  ESP_LOGD(TAG, "current mode is now %d", mode);
   g_wifi_ctrl.mode = mode;
 
 }

@@ -23,6 +23,66 @@ void wifi_aplist_init(wifi_aplist_t *p_list)
 
 
 /**
+ * wifi_aplist_clean()
+ **/
+
+void wifi_aplist_clean(wifi_aplist_t *p_list)
+{
+  wifi_ap_t *p_item;
+  wifi_ap_t *p_previous;
+  
+  ESP_LOGI(TAG, "Clean list");
+
+  p_previous = NULL;
+  p_item = p_list->p_first;
+  while (p_item != NULL)
+  {
+    /* Decrease freshness. */
+    p_item->freshness--;
+    if (p_item->freshness < WIFI_AP_FRESHNESS_OLD)
+    {
+      ESP_LOGI(TAG, "%s is not so fresh, removing it", p_item->essid);
+
+      /* Remove item */
+      if (p_previous == NULL)
+      {
+        /* Update our pointer to the first item and free this item. */
+        p_list->p_first = p_item->p_next;
+        free(p_item);
+
+        /* Go on with the next item. */
+        p_item = p_list->p_first;
+      }
+      else
+      {
+        /* Skip the item to be removed. */
+        p_previous->p_next = p_item->p_next;
+
+        /* Free the item (remove). */
+        free(p_item);
+
+        /* Go on with next item. */
+        p_item = p_previous->p_next;
+      }
+
+      /* Decrease number of items. */
+      p_list->count--;
+    }
+    else
+    {
+      ESP_LOGI(TAG, "%s is fresh enough", p_item->essid);
+
+      /* Keep previous up-to-date. */
+      p_previous = p_item;
+
+      /* Go on with next item. */
+      p_item = p_item->p_next;
+    }
+  }
+}
+
+
+/**
  * wifi_aplist_alloc_item()
  * 
  * @brief: Allocate and initialize a list item.
@@ -51,6 +111,7 @@ wifi_ap_t *wifi_aplist_alloc_item(wifi_ap_record_t *ap)
     p_item->auth_mode = ap->authmode;
     p_item->pw_cipher = ap->pairwise_cipher;
     p_item->gp_cipher = ap->group_cipher;
+    p_item->freshness = WIFI_AP_FRESHNESS_MAX;
     
     /* No next item. */
     p_item->p_next = NULL;
@@ -90,7 +151,7 @@ void wifi_aplist_add(wifi_aplist_t *p_list, wifi_ap_record_t *ap)
 
     /* First, we walk the list to avoid a potential double. */
     p_item = p_list->p_first;
-    while(p_item->p_next != NULL)
+    while (p_item != NULL)
     {
       /* Do we already know this AP ? */
       if (!memcmp(p_item->bssid, ap->bssid, 6))
@@ -103,9 +164,17 @@ void wifi_aplist_add(wifi_aplist_t *p_list, wifi_ap_record_t *ap)
         p_item->auth_mode = ap->authmode;
         p_item->pw_cipher = ap->pairwise_cipher;
         p_item->gp_cipher = ap->group_cipher;
+        p_item->freshness = WIFI_AP_FRESHNESS_MAX;
+
+        /* Clean list. */
+        wifi_aplist_clean(p_list);
 
         /* Item added, exit. */
         return;
+      }
+      else if (p_item->p_next == NULL)
+      {
+        break;
       }
       else
         /* Go to the next item. */
@@ -125,6 +194,9 @@ void wifi_aplist_add(wifi_aplist_t *p_list, wifi_ap_record_t *ap)
         /* Link item. */
         p_anchor->p_next = p_item;
         p_list->count++;
+
+        /* Clean list. */
+        wifi_aplist_clean(p_list);
       }
     }
   }
