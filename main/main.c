@@ -9,12 +9,6 @@
 #include "twatch.h"
 #include "img.h"
 #include "digits.h"
-/*
-#include "skull.h"
-#include "cat.h"
-#include "doh.h"
-*/
-#include "cat.h"
 
 #include "ui/ui.h"
 #include "ui/button.h"
@@ -22,7 +16,6 @@
 #include "ui/image.h"
 #include "ui/listbox.h"
 #include "ui/progress.h"
-#include "font/font16.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
 
@@ -35,7 +28,7 @@
 
 #define DEFAULT_SCAN_LIST_SIZE 10
 #define WIFI_MAX_CHANNELS 14
-#define WIFI_MAX_MEASURES 5
+#define WIFI_MAX_MEASURES 5 
 
 /* Define our viewer settings. */
 #define VIEWER_X_POS 22
@@ -47,12 +40,9 @@
 
 #define TAG "wifi_scanner"
 
-#if 0
-typedef enum {
-  SCANNER_IDLE,
-  SCANNER_RUNNING
-} scanner_state_t;
-#endif
+
+bool g_deauth_active = false;
+
 
 volatile scanner_state_t g_state = SCANNER_IDLE;
 int8_t channels_measures[WIFI_MAX_CHANNELS][WIFI_MAX_MEASURES];
@@ -102,16 +92,6 @@ void disp_mac(uint8_t *mac)
   for (i=0; i<6; i++)
     printf((i<5)?"%02x:":"%02x", mac[i]);
   printf("\r\n");
-}
-
-
-static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
-{
-  if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_SCAN_DONE)
-  {
-    printf("[wifi] scan done.\r\n");
-    g_state = SCANNER_IDLE;
-  }
 }
 
 /**
@@ -172,21 +152,6 @@ void wifi_test(void *parameter)
 
   /* reset channels RSSI. */
   init_measures();
-
-  #if 0
-  g_state = SCANNER_IDLE;
-  
-  ESP_ERROR_CHECK(esp_event_loop_create_default());
-  esp_event_handler_instance_t instance_any_id;
-  esp_event_handler_instance_t instance_got_ip;
-  ESP_ERROR_CHECK(esp_event_handler_instance_register(
-    WIFI_EVENT,
-    ESP_EVENT_ANY_ID,
-    &event_handler,
-    NULL,
-    &instance_any_id
-  ));
-  #endif
 
   k=0;
   while (1)
@@ -279,51 +244,53 @@ int draw_wifi_stats(tile_t *p_tile)
   return 0;
 }
 
+void deauth_go(widget_t *p_widget)
+{
+  widget_button_t *p_button = (widget_button_t *)(p_widget->p_user_data);
+  wifi_ap_t *p_ap;
+
+  if (!g_deauth_active)
+  {
+    p_ap = wifiscan_get_selected();
+    if (p_ap != NULL)
+    {
+      /* Start deauth. */
+      wifi_deauth_target(p_ap->bssid, p_ap->channel);
+
+      /* Set button name to "STOP" */
+      widget_button_set_text(p_button, "STOP");
+      g_deauth_active = true;
+    }
+  }
+  else
+  {
+    /* Rename button. */
+    widget_button_set_text(p_button, "Deauth !");
+    
+    /* Restart scanner. */
+    wifi_set_mode(WIFI_SCANNER);
+  }
+}
+
 void main_ui(void *parameter)
 {
-  widget_image_t image,image2;
-  image_t *cat;
-  tile_t main_tile, cat_tile, network_tile;
-  widget_label_t wifi0, wifi1, wifi2;
-  widget_listbox_t list;
-  widget_button_t btn;
-  widget_progress_t progress;
+  tile_t main_tile;
 
+  /* Deauth tool */
+  tile_t deauth_screen;
+  widget_button_t btn_deauth;
 
-  /* Load cat image. */
-  cat = load_image(img_cat);
-
+  /* Main screen */
   tile_init(&main_tile, NULL);
   tile_set_drawfunc(&main_tile, draw_wifi_stats);
 
-  tile_init(&cat_tile, NULL);
-  //widget_image_init(&image, &cat_tile, 10, 10, 200, 200, cat);
-  widget_image_init(&image2, NULL, 5, 125, 200, 20, cat);
+  /* Deauth tool. */
+  tile_init(&deauth_screen, NULL);
+  wifiscan_init(&deauth_screen, 5, 5, 230, 190);
+  widget_button_init(&btn_deauth, &deauth_screen, 5,200,230,35,"Deauth !");
+  widget_button_set_handler(&btn_deauth, deauth_go);
 
-  tile_init(&network_tile, NULL);
-  widget_label_init(&wifi0, NULL, 0, 0, 200, 32, "M");
-  widget_label_init(&wifi1, NULL, 0, 0, 200, 32, "Tagadatsointsoin");
-  widget_label_init(&wifi2, NULL, 0, 0, 200, 32, "Hackme!");
-
-  widget_progress_init(&progress, NULL, 5, 150, 150, 20);
-  widget_progress_set_value(&progress, 25);
-
-  /* Test container. */
-  widget_button_init(&btn, NULL, 5, 0, 120, 800,"Test");
-  widget_listbox_init(&list, &network_tile, 21, 20, 200, 200);
-  widget_listbox_add(&list, (widget_t *)&wifi0);
-  widget_listbox_add(&list, (widget_t *)&wifi1);
-  widget_listbox_add(&list, (widget_t *)&wifi2);
-  widget_listbox_add(&list, (widget_t *)&btn);
-  widget_listbox_add(&list, (widget_t *)&progress);
-
-  widget_listbox_remove(&list, (widget_t *)&wifi2);
-
-  tile_link_right(&cat_tile, &network_tile);
-  tile_link_right(&network_tile, &main_tile);
-  tile_link_right(&main_tile, wifiscan_get_tile());
-  
-  ui_select_tile(&cat_tile);
+  ui_select_tile(&deauth_screen);
 
   while (1)
   {
@@ -352,25 +319,11 @@ void app_main(void)
 
   twatch_vibrate_init();
   twatch_pmu_init();
-  //twatch_pmu_audio_power(true);
-  //twatch_audio_init(SOUND_DEFAULT_SAMPLE_RATE);
-
-  twatch_pmu_screen_power(true);
-  vTaskDelay(200/portTICK_RATE_MS);
-  ret = st7789_init();
-  assert(ret == ESP_OK);
-  st7789_backlight_set(1000);
-
+  twatch_screen_init();
 
   /* Initialize WiFi controller. */
   wifi_ctrl_init();
-  wifi_set_mode(WIFI_SNIFFER);
+  wifi_set_mode(WIFI_SCANNER);
 
-  /* Initialize wifi scanner. */
-  wifiscan_init();
-
-  //xTaskCreate(wifi_test, "wifi_test", 10000, NULL, 1, NULL);
   xTaskCreate(main_ui, "main_ui", 10000, NULL, 1, NULL);
-
-  
 }

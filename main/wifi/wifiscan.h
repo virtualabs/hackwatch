@@ -49,7 +49,7 @@ typedef struct {
   int nb_aps;
 } wifiscan_t;
 
-void wifiscan_init(void);
-tile_t *wifiscan_get_tile(void);
+void wifiscan_init(tile_t *p_tile, int x, int y, int width, int height);
+wifi_ap_t *wifiscan_get_selected(void);
 
 #endif /* __INC_WIFISCAN_H */

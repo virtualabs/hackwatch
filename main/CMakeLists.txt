@@ -2,6 +2,6 @@
 set(COMPONENT_REQUIRES twatch-lib)
 set(COMPONENT_PRIV_REQUIRES )
 
-set(COMPONENT_SRCS "main.c wifi/wifi.c wifi/wifi_aplist.c wifi/wifiscan.c")
+set(COMPONENT_SRCS "main.c wifi/wifi.c wifi/wifi_aplist.c wifi/wifiscan.c wifi/dissect.c")
 
 register_component()

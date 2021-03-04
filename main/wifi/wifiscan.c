@@ -203,7 +203,7 @@ static void wscan_aplist_update_handler(void* arg, esp_event_base_t event_base, 
 }
 
 
-void wifiscan_init(void)
+void wifiscan_init(tile_t *p_tile, int x, int y, int width, int height)
 {
   int i;
 
@@ -213,11 +213,11 @@ void wifiscan_init(void)
   /* Add a listbox inside this tile. */
   widget_listbox_init(
     &g_wscan.listbox,
-    &g_wscan.tile_scanner,
-    WSCAN_LISTBOX_X,
-    WSCAN_LISTBOX_Y,
-    WSCAN_LISTBOX_W,
-    WSCAN_LISTBOX_H
+    p_tile,
+    x,
+    y,
+    width,
+    height
   );
 
   /* Register a specific handler for scanning events. */
@@ -240,8 +240,19 @@ void wifiscan_init(void)
   }
 }
 
-
-tile_t *wifiscan_get_tile(void)
+wifi_ap_t *wifiscan_get_selected(void)
 {
-  return (tile_t *)&g_wscan.tile_scanner;
+  int i;
+
+  for (i=0; i<g_wscan.nb_aps; i++)
+  {
+    if (g_wscan.aps[i].b_selected)
+    {
+      /* AP selected returned. */
+      return g_wscan.aps[i].p_ap;
+    }
+  }
+
+  /* No AP selected. */
+  return NULL;
 }

