@@ -3,8 +3,6 @@
 #include "esp_log.h"
 #include "wifiscan.h"
 
-static wifiscan_t g_wscan;
-
 
 /**************************************
  * AccessPoint ListItem widget
@@ -21,6 +19,18 @@ uint16_t wscan_get_rssi_color(int rssi)
   return WSCAN_RSSI_GOOD_COLOR;
 }
 
+
+/**
+ * wscan_widget_listitem_event_handler()
+ * 
+ * @brief: Wifi scan widget listitem event handler.
+ * @param event: UI event.
+ * @param x: X screen coordinate
+ * @param y: Y screen coordinate
+ * @param velocity: swipe speed (not used).
+ * @return: WE_PROCESSED if event has been processed, WE_ERROR otherwise.
+ **/
+
 int wscan_widget_listitem_event_handler(widget_t *p_widget, widget_event_t event, int x, int  y, int velocity)
 {
   bool b_processed = false;
@@ -33,6 +43,7 @@ int wscan_widget_listitem_event_handler(widget_t *p_widget, widget_event_t event
 
       case LB_ITEM_SELECTED:
         {
+          /* Mark list item as selected. */
           p_listitem->b_selected = true;
           b_processed = true;
         }
@@ -58,9 +69,15 @@ int wscan_widget_listitem_event_handler(widget_t *p_widget, widget_event_t event
 }
 
 
+/**
+ * wscan_widget_listitem_drawfunc()
+ * 
+ * @brief: Wifiscan listitem widget drawing function.
+ * @param p_widget: pointer to a `widget_t` structure.
+ **/
+
 void wscan_widget_listitem_drawfunc(widget_t *p_widget)
 {
-  int text_width, dx, dy;
   char bssid[18];
   char channel[4];
 
@@ -124,6 +141,14 @@ void wscan_widget_listitem_drawfunc(widget_t *p_widget)
 }
 
 
+/**
+ * wscan_widget_listitem_init()
+ * 
+ * @brief: Wifiscan listitem widget initialization.
+ * @param p_listitem: pointer to a `wifiscan_widget_listitem_t` structure
+ * @param p_ap: pointer to a `wifi_ap_t` structure.
+ **/
+
 void wscan_widget_listitem_init(wifiscan_widget_listitem_t *p_listitem, wifi_ap_t *p_ap)
 {
   /* Initialize our widget. */
@@ -137,16 +162,27 @@ void wscan_widget_listitem_init(wifiscan_widget_listitem_t *p_listitem, wifi_ap_
   widget_set_userdata(&p_listitem->widget, (void *)p_listitem);
 
   /* Set drawing function. */
-  widget_set_drawfunc(&p_listitem->widget, wscan_widget_listitem_drawfunc);
+  widget_set_drawfunc(&p_listitem->widget, (FDrawWidget)wscan_widget_listitem_drawfunc);
 
   /* Set default event handler. */
   widget_set_eventhandler(&p_listitem->widget, wscan_widget_listitem_event_handler);
 }
 
 
+/**
+ * wscan_aplist_update_handler()
+ * 
+ * @brief: Wifi scanner callback
+ * @param arg: pointer to a `wifiscan_t` structure 
+ * @param event_base: ESP32 event base information
+ * @param event_id: ESP32 event ID
+ * @param event_data: pointer to an array of `wifi_aplist_t` structure
+ **/
+
 static void wscan_aplist_update_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
   int list_nb_aps, i;
+  wifiscan_t *p_wifiscan = (wifiscan_t *)arg;
   wifi_aplist_t *p_list = (wifi_aplist_t *)event_data;
   wifi_ap_t *p_ap_record;
 
@@ -174,45 +210,72 @@ static void wscan_aplist_update_handler(void* arg, esp_event_base_t event_base, 
 
       list_nb_aps++;
 
-      if ((list_nb_aps > g_wscan.nb_aps) && (g_wscan.nb_aps < WSCAN_MAX_APS))
+      if ((list_nb_aps > p_wifiscan->nb_aps) && (p_wifiscan->nb_aps < WSCAN_MAX_APS))
       {
-        g_wscan.aps[list_nb_aps-1].p_ap = p_ap_record;
-        widget_listbox_add(&g_wscan.listbox, &g_wscan.aps[list_nb_aps-1]);
-        g_wscan.nb_aps++;
+        p_wifiscan->aps[list_nb_aps-1].p_ap = p_ap_record;
+        widget_listbox_add(&p_wifiscan->listbox, &p_wifiscan->aps[list_nb_aps-1]);
+        p_wifiscan->nb_aps++;
       }
       else
       {
-        g_wscan.aps[list_nb_aps-1].p_ap = p_ap_record;
+        p_wifiscan->aps[list_nb_aps-1].p_ap = p_ap_record;
       }
     }
     while ((p_ap_record = wifi_aplist_enum_next(p_ap_record)) != NULL);
   }
 
   /* Remove old access points (no more detected). */
-  if ((g_wscan.nb_aps > list_nb_aps) && (list_nb_aps > 0))
+  if ((p_wifiscan->nb_aps > list_nb_aps) && (list_nb_aps > 0))
   {
-    for (i=list_nb_aps; i<g_wscan.nb_aps; i++)
+    for (i=list_nb_aps; i<p_wifiscan->nb_aps; i++)
     {
-      ESP_LOGI(TAG, "Remove item %s", g_wscan.aps[i].p_ap->essid);
-      widget_listbox_remove(&g_wscan.listbox, &g_wscan.aps[i]);
+      ESP_LOGI(TAG, "Remove item %s", p_wifiscan->aps[i].p_ap->essid);
+      widget_listbox_remove(&p_wifiscan->listbox, &p_wifiscan->aps[i]);
     }
 
     /* Update number of aps. */
-    g_wscan.nb_aps = list_nb_aps;
+    p_wifiscan->nb_aps = list_nb_aps;
   }
 }
 
 
-void wifiscan_init(tile_t *p_tile, int x, int y, int width, int height)
+int wscan_listbox_event_hook(widget_t *p_widget, widget_event_t event, int x, int  y, int velocity)
+{
+  wifiscan_t *p_wifiscan = (wifiscan_t *)p_widget;
+
+  /* Only capture the LB_ITEM_SELECTED event. */
+  if (event == LB_ITEM_SELECTED)
+  {
+    /* Forward to our custom event handler. */
+    if (p_wifiscan->pfn_event_handler != NULL)
+    {
+      p_wifiscan->pfn_event_handler(WS_EVENT_SELECTED);
+    }
+  }
+
+  /* Forward event to our listbox. */
+  return p_wifiscan->pfn_event_hook(p_widget, event, x, y, velocity);
+}
+
+/**
+ * wifiscan_init()
+ * 
+ * @brief: Initialize a wifiscan widget
+ * @param p_wifiscan: pointer to a `wifiscan_t` structure
+ * @param p_tile: pointer to a `tile_t` structure (parent tile)
+ * @param x: widget X coordinate
+ * @param y: widget Y coordinate
+ * @param width: widget width
+ * @param height: widget height
+ **/
+
+void wifiscan_init(wifiscan_t *p_wifiscan, tile_t *p_tile, int x, int y, int width, int height)
 {
   int i;
 
-  /* We create a specific tile (view) for this controller. */
-  tile_init(&g_wscan.tile_scanner, NULL);
-
   /* Add a listbox inside this tile. */
   widget_listbox_init(
-    &g_wscan.listbox,
+    (widget_listbox_t *)p_wifiscan,
     p_tile,
     x,
     y,
@@ -220,39 +283,64 @@ void wifiscan_init(tile_t *p_tile, int x, int y, int width, int height)
     height
   );
 
+  p_wifiscan->pfn_event_hook = widget_set_eventhandler((widget_t *)p_wifiscan, wscan_listbox_event_hook);
+
   /* Register a specific handler for scanning events. */
   wifi_ctrl_event_handler_register(
     WIFI_SCANNER_EVENT_APLIST_UPDATED,
     wscan_aplist_update_handler,
-    NULL
+    p_wifiscan
   );
 
   /* Set parameters. */
-  g_wscan.nb_aps = 0;
+  p_wifiscan->nb_aps = 0;
 
   /* Initialize all of our labels. */
   for (i=0; i<WSCAN_MAX_APS; i++)
   {
     wscan_widget_listitem_init(
-      &g_wscan.aps[i],
+      &p_wifiscan->aps[i],
       NULL
     );
   }
 }
 
-wifi_ap_t *wifiscan_get_selected(void)
+
+/**
+ * wifiscan_get_selected()
+ * 
+ * @brief: Retrieve the selected AP.
+ * @param p_wifiscan: pointer to a `wifiscan_t` structure
+ * @return: pointer to a `wifi_ap_t` structure, or NULL if none has been selected.
+ **/
+
+wifi_ap_t *wifiscan_get_selected(wifiscan_t *p_wifiscan)
 {
   int i;
 
-  for (i=0; i<g_wscan.nb_aps; i++)
+  for (i=0; i<p_wifiscan->nb_aps; i++)
   {
-    if (g_wscan.aps[i].b_selected)
+    if (p_wifiscan->aps[i].b_selected)
     {
       /* AP selected returned. */
-      return g_wscan.aps[i].p_ap;
+      return p_wifiscan->aps[i].p_ap;
     }
   }
 
   /* No AP selected. */
   return NULL;
+}
+
+
+/**
+ * wifiscan_set_event_handler()
+ * 
+ * @brief: Set wifiscan event handler.
+ * @param p_wifiscan: pointer to a `wifiscan_t` structure
+ * @param pfn_event_handler: pointer to a FWifiscanEventHandler callback function.
+ **/
+
+void wifiscan_set_event_handler(wifiscan_t *p_wifiscan, FWifiscanEventHandler pfn_event_handler)
+{
+  p_wifiscan->pfn_event_handler = pfn_event_handler;
 }

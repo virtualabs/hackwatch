@@ -26,6 +26,12 @@
 
 #define WSCAN_MAX_APS   20
 
+typedef enum {
+  WS_EVENT_SELECTED
+} wifiscan_event_t;
+
+/* Event callback type. */
+typedef void (*FWifiscanEventHandler)(wifiscan_event_t event);
 
 /* AccessPoint ListItem widget. */
 typedef struct {
@@ -38,18 +44,27 @@ typedef struct {
 
   /* Selected. */
   bool b_selected;
-
 } wifiscan_widget_listitem_t;
 
-typedef struct {
-  tile_t tile_scanner;
-  widget_listbox_t listbox;
 
+/* Wifiscan widget structure. */
+typedef struct {
+  widget_listbox_t listbox;
+  
+  tile_t tile_scanner;
   wifiscan_widget_listitem_t aps[WSCAN_MAX_APS];
   int nb_aps;
+
+  /* Listbox event hook. */
+  FEventHandler pfn_event_hook;
+
+  /* Event callback. */
+  FWifiscanEventHandler pfn_event_handler;
+
 } wifiscan_t;
 
-void wifiscan_init(tile_t *p_tile, int x, int y, int width, int height);
-wifi_ap_t *wifiscan_get_selected(void);
+void wifiscan_init(wifiscan_t *p_wifiscan, tile_t *p_tile, int x, int y, int width, int height);
+wifi_ap_t *wifiscan_get_selected(wifiscan_t *p_wifiscan);
+void wifiscan_set_event_handler(wifiscan_t *p_wifiscan, FWifiscanEventHandler pfn_event_handler);
 
 #endif /* __INC_WIFISCAN_H */
