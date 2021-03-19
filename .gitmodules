@@ -1,0 +1,3 @@
+[submodule "components/twatch-lib"]
+	path = components/twatch-lib
+	url = https://github.com/virtualabs/twatch-lib.git
