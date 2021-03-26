@@ -432,16 +432,22 @@ void wifi_scanner_task(void *parameter)
 
   g_wifi_ctrl.scan_state = SCANNER_IDLE;
 
-  ESP_ERROR_CHECK(esp_event_loop_create_default());
-  esp_event_handler_instance_t instance_any_id;
-  esp_event_handler_instance_t instance_got_ip;
-  ESP_ERROR_CHECK(esp_event_handler_instance_register(
-    WIFI_EVENT,
-    ESP_EVENT_ANY_ID,
-    &wifi_scanner_event_handler,
-    NULL,
-    &instance_any_id
-  ));
+  if (!g_wifi_ctrl.evt_loop_initialized)
+  {
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    esp_event_handler_instance_t instance_any_id;
+    esp_event_handler_instance_t instance_got_ip;
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(
+      WIFI_EVENT,
+      ESP_EVENT_ANY_ID,
+      &wifi_scanner_event_handler,
+      NULL,
+      &instance_any_id
+    ));
+
+    /* Mark event loop as initialized. */
+    g_wifi_ctrl.evt_loop_initialized = true;
+  }
 
   while (1)
   {
@@ -553,6 +559,7 @@ void wifi_ctrl_init(void)
   g_wifi_ctrl.evt_loop_args.task_priority = uxTaskPriorityGet(NULL);
   g_wifi_ctrl.evt_loop_args.task_stack_size = 2048;
   g_wifi_ctrl.evt_loop_args.task_core_id = tskNO_AFFINITY;
+  g_wifi_ctrl.evt_loop_initialized = false;
 
   /* Create our custom loop. */
   if (esp_event_loop_create(&g_wifi_ctrl.evt_loop_args, &g_wifi_ctrl.evt_loop_handle) == ESP_OK)

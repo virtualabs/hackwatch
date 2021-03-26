@@ -17,6 +17,7 @@ void scanner_event_handler(wifiscan_event_t event)
     ESP_LOGI(TAG, "AP selected: %s", p_ap->essid);
 
     /* Switch to the next screen (bottom). */
+    tile_apinfo_set_ap(p_ap);
     ui_go_down();
   }
 }
@@ -27,7 +28,7 @@ tile_t *tile_scanner_init(void)
   tile_init(&scanner_tile, NULL);
 
   /* Add a wifiscan widget. */
-  wifiscan_init(&g_wifiscan, &scanner_tile, 5, 5, 230, 190);
+  wifiscan_init(&g_wifiscan, &scanner_tile, 5, 5, 230, 230);
   wifiscan_set_event_handler(&g_wifiscan, scanner_event_handler);
 
   /* Return our tile. */

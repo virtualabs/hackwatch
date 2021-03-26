@@ -67,6 +67,7 @@ typedef struct tWifiController {
   int deauth_channel;
 
   /* Custom event loop. */
+  bool evt_loop_initialized;
   esp_event_loop_args_t evt_loop_args;
   esp_event_loop_handle_t evt_loop_handle;
 

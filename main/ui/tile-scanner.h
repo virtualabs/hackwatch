@@ -5,6 +5,7 @@
 #include "ui/ui.h"
 #include "ui/button.h"
 #include "../wifi/wifiscan.h"
+#include "../ui/tile-apinfo.h"
 
 tile_t *tile_scanner_init(void);
 
