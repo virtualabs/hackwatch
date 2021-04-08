@@ -9,15 +9,15 @@
 #include "twatch.h"
 #include "ui/tile-scanner.h"
 #include "ui/tile-apinfo.h"
+#include "ui/tile-clock.h"
 #include "wifi_icon.h"
-#include "cat.h"
 
 void main_ui(void *parameter)
 {
   tile_t main_tile;
   tile_t wifi_tile;
-  tile_t *deauth_tile, *apinfo_tile;
-  image_t *wifi, *cat;
+  tile_t *deauth_tile, *apinfo_tile, *clock_tile;
+  image_t *wifi;
   
   widget_label_t label_main;
   widget_label_t label_wifi;
@@ -31,7 +31,6 @@ void main_ui(void *parameter)
   /* Main screen */
   tile_init(&wifi_tile, NULL);
   wifi = load_image(wifi_icon);
-  cat = load_image(img_cat);
   widget_image_init(&wifi_img, &wifi_tile, 70, (240-88)/2 - 20, 100, 88, wifi);
   widget_label_init(&wifi_lbl, &wifi_tile, 90, 150, 120, 50, "WiFi");
 
@@ -41,15 +40,16 @@ void main_ui(void *parameter)
 
   deauth_tile = tile_scanner_init();
   apinfo_tile = tile_apinfo_init();
-
-  tile_link_right(&main_tile, &wifi_tile);
-  tile_link_left(&main_tile, &wifi_tile);
+  clock_tile = tile_clock_init();
+  
+  //tile_link_right(&clock_tile, &wifi_tile);
+  tile_link_right(clock_tile, &wifi_tile);
+  tile_link_left(clock_tile, &wifi_tile);
   tile_link_bottom(&wifi_tile, deauth_tile);
   tile_link_bottom(deauth_tile, apinfo_tile);
 
-
   /* Select our main tile. */
-  ui_select_tile(&main_tile);
+  ui_select_tile(clock_tile);
 
   while (1)
   {
@@ -82,7 +82,7 @@ void app_main(void)
 
   /* Initialize WiFi controller. */
   wifi_ctrl_init();
-  wifi_set_mode(WIFI_SCANNER);
+  //wifi_set_mode(WIFI_SCANNER);
 
   xTaskCreate(main_ui, "main_ui", 10000, NULL, 1, NULL);
 }
