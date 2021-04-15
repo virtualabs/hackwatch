@@ -60,6 +60,7 @@ void main_ui(void *parameter)
 
 void app_main(void)
 {
+  //rtc_datetime_t datetime;
   esp_err_t ret;
 
   esp_log_level_set("*", ESP_LOG_INFO);
@@ -79,10 +80,20 @@ void app_main(void)
   twatch_vibrate_init();
   twatch_pmu_init();
   twatch_screen_init();
+  twatch_rtc_init();
+  /*
+  datetime.year = 2021;
+  datetime.month=4;
+  datetime.day=16;
+  datetime.hour=1;
+  datetime.minute=00;
+  datetime.second=0;
+  twatch_rtc_set_date_time(&datetime);
+  */
 
   /* Initialize WiFi controller. */
   wifi_ctrl_init();
-  //wifi_set_mode(WIFI_SCANNER);
+  wifi_set_mode(WIFI_SCANNER);
 
   xTaskCreate(main_ui, "main_ui", 10000, NULL, 1, NULL);
 }
