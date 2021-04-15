@@ -13,6 +13,7 @@
 
 static tile_t clock_tile;
 static image_t *clock_digits;
+rtc_datetime_t datetime;
 int hours=12, mins=34;
 
 int _tile_clock_draw(tile_t *p_tile)
@@ -91,6 +92,18 @@ int _tile_clock_draw(tile_t *p_tile)
 }
 
 
+void clock_update(void *parameter)
+{
+  while(true)
+  {
+    twatch_rtc_get_date_time(&datetime);
+    hours = datetime.hour;
+    mins = datetime.minute;
+    vTaskDelay(300/portTICK_PERIOD_MS);
+  }
+}
+
+
 tile_t *tile_clock_init(void)
 {
   /* Load digits into memory. */
@@ -101,6 +114,9 @@ tile_t *tile_clock_init(void)
 
   /* Set tile drawing function. */
   tile_set_drawfunc(&clock_tile, _tile_clock_draw);
+
+  /* Create update task. */
+  xTaskCreate(clock_update, "clock_update", 10000, NULL, 1, NULL);
 
   /* Return our tile. */
   return &clock_tile;
