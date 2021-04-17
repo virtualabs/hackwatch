@@ -31,30 +31,29 @@ char *auth_mode[] = {
 
 void deauth_toggle(struct widget_t *p_widget)
 {
-  if (!deauth_enabled)
-  {
-    /* Set target. */
-    wifi_deauth_target(p_ap_info->bssid, p_ap_info->channel);
+  if (p_ap_info) {
+    if (!deauth_enabled)
+    {
+      /* Set target. */
+      wifi_deauth_target(p_ap_info->bssid, p_ap_info->channel);
 
-    /* Enable deauth ! */
-    wifi_set_mode(WIFI_DEAUTH);
+      /* Change button text. */
+      widget_button_set_text(&deauth_btn, "Stop");
 
-    /* Change button text. */
-    widget_button_set_text(&deauth_btn, "Stop");
+      /* Deauth is on. */
+      deauth_enabled = true;
+    }
+    else
+    {
+      /* Stop deauth. */
+      wifi_set_mode(WIFI_SCANNER);
 
-    /* Deauth is on. */
-    deauth_enabled = true;
-  }
-  else
-  {
-    /* Stop deauth. */
-    wifi_set_mode(WIFI_SCANNER);
+      /* Set button text. */
+      widget_button_set_text(&deauth_btn, "Deauth");
 
-    /* Set button text. */
-    widget_button_set_text(&deauth_btn, "Deauth");
-
-    /* Deauth is off. */
-    deauth_enabled = false;
+      /* Deauth is off. */
+      deauth_enabled = false;
+    }
   }
 }
 
@@ -83,7 +82,7 @@ tile_t *tile_apinfo_init(void)
   widget_label_set_fontsize(&channel_lbl, LABEL_FONT_SMALL);
   widget_set_front_color(&channel_lbl, BLUE);
 
-  widget_label_init(&channel, &apinfo_tile, 70, 70, 160, 45, "6");
+  widget_label_init(&channel, &apinfo_tile, 70, 70, 160, 45, "");
   widget_label_set_fontsize(&channel, LABEL_FONT_SMALL);
 
   widget_label_init(&security_lbl, &apinfo_tile, 10, 90, 230, 45, "Security");
