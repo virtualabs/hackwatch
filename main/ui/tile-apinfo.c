@@ -31,7 +31,8 @@ char *auth_mode[] = {
 
 void deauth_toggle(struct widget_t *p_widget)
 {
-  if (p_ap_info) {
+  if (p_ap_info != NULL) 
+  {
     if (!deauth_enabled)
     {
       /* Set target. */
