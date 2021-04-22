@@ -10,13 +10,14 @@
 #include "ui/tile-scanner.h"
 #include "ui/tile-apinfo.h"
 #include "ui/tile-clock.h"
+#include "ui/tile-settings.h"
 #include "wifi_icon.h"
 
 void main_ui(void *parameter)
 {
   tile_t main_tile;
   tile_t wifi_tile;
-  tile_t *deauth_tile, *apinfo_tile, *clock_tile;
+  tile_t *p_deauth_tile, *p_apinfo_tile, *p_clock_tile, *p_settings_tile;
   image_t *wifi;
   
   widget_label_t label_main;
@@ -38,18 +39,20 @@ void main_ui(void *parameter)
 
 
 
-  deauth_tile = tile_scanner_init();
-  apinfo_tile = tile_apinfo_init();
-  clock_tile = tile_clock_init();
+  p_deauth_tile = tile_scanner_init();
+  p_apinfo_tile = tile_apinfo_init();
+  p_clock_tile = tile_clock_init();
+  p_settings_tile = tile_settings_init();
   
   //tile_link_right(&clock_tile, &wifi_tile);
-  tile_link_right(clock_tile, &wifi_tile);
-  tile_link_left(clock_tile, &wifi_tile);
-  tile_link_bottom(&wifi_tile, deauth_tile);
-  tile_link_bottom(deauth_tile, apinfo_tile);
+  tile_link_right(p_clock_tile, &wifi_tile);
+  tile_link_left(p_clock_tile, &wifi_tile);
+  tile_link_bottom(p_clock_tile, p_settings_tile);
+  tile_link_bottom(&wifi_tile, p_deauth_tile);
+  tile_link_bottom(p_deauth_tile, p_apinfo_tile);
 
   /* Select our main tile. */
-  ui_select_tile(clock_tile);
+  ui_select_tile(p_clock_tile);
 
   while (1)
   {
