@@ -344,6 +344,10 @@ void wifi_deauth_enable(void)
   ESP_ERROR_CHECK( esp_wifi_start() );
   esp_wifi_set_channel(g_wifi_ctrl.deauth_channel, 0);
 
+  /* Mark WiFi as enabled. */
+  if (!g_wifi_ctrl.b_enabled)
+    g_wifi_ctrl.b_enabled = true;
+
   /* Start scanner. */
   xTaskCreate(wifi_deauth_task, "wifi_deauth", 10000, NULL, 1, &g_wifi_ctrl.current_task_handle);
 }
@@ -630,6 +634,12 @@ void wifi_set_mode(wifi_controller_mode_t mode)
   ESP_LOGD(TAG, "current mode is now %d", mode);
   g_wifi_ctrl.mode = mode;
 
+}
+
+
+wifi_controller_mode_t wifi_get_mode(void)
+{
+  return g_wifi_ctrl.mode;
 }
 
 

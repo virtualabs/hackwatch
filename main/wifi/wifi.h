@@ -76,6 +76,7 @@ typedef struct tWifiController {
 /* Initialization. */
 void wifi_ctrl_init(void);
 void wifi_set_mode(wifi_controller_mode_t mode);
+wifi_controller_mode_t wifi_get_mode(void);
 void wifi_deauth_target(uint8_t *p_bssid, int channel);
 
 /* Event handling. */

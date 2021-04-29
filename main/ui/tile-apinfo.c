@@ -7,10 +7,9 @@ static tile_t apinfo_tile;
 static widget_label_t title_lbl, mac_lbl, channel_lbl, security_lbl, rssi_lbl;
 static widget_label_t mac_address, channel, security, rssi;
 static widget_frame_t frame;
-static wifi_ap_t *p_ap_info;
+static wifi_ap_t ap_info;
 static widget_button_t deauth_btn;
 
-volatile char *psz_essid[32];
 volatile char *psz_mac[18];
 volatile char *psz_channel[4];
 volatile char *psz_rssi[6];
@@ -31,43 +30,67 @@ char *auth_mode[] = {
 
 void deauth_toggle(struct widget_t *p_widget)
 {
-  if (p_ap_info != NULL) 
+  if (!deauth_enabled)
   {
-    if (!deauth_enabled)
-    {
-      /* Set target. */
-      wifi_deauth_target(p_ap_info->bssid, p_ap_info->channel);
+    /* Set target. */
+    wifi_deauth_target(ap_info.bssid, ap_info.channel);
 
-      /* Change button text. */
-      widget_button_set_text(&deauth_btn, "Stop");
+    /* Change button text. */
+    widget_button_set_text(&deauth_btn, "Stop");
 
-      /* Deauth is on. */
-      deauth_enabled = true;
-    }
-    else
-    {
-      /* Stop deauth. */
-      wifi_set_mode(WIFI_SCANNER);
-
-      /* Set button text. */
-      widget_button_set_text(&deauth_btn, "Deauth");
-
-      /* Deauth is off. */
-      deauth_enabled = false;
-    }
+    /* Deauth is on. */
+    deauth_enabled = true;
   }
+  else
+  {
+    /* Stop deauth. */
+    wifi_set_mode(WIFI_OFF);
+
+    /* Set button text. */
+    widget_button_set_text(&deauth_btn, "Deauth");
+
+    /* Deauth is off. */
+    deauth_enabled = false;
+  }
+}
+
+int apinfo_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
+{
+  switch (event)
+  {
+    case TE_ENTER:
+      break;
+
+    case TE_EXIT:
+      {
+        if (deauth_enabled)
+        {
+          deauth_enabled = false;
+          
+          /* Stop deauth. */
+          //wifi_set_mode(WIFI_SCANNER);
+          wifi_set_mode(WIFI_OFF);
+        }
+      }
+      break;
+  }
+
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 tile_t *tile_apinfo_init(void)
 {
   /* Initialize our wifi_ap_info. */
-  psz_essid[0] = '\0';
   psz_mac[0] = '\0';
   psz_channel[0] = '\0';
   psz_rssi[0] = '\0';
 
   /* Initialize our tile. */
   tile_init(&apinfo_tile, NULL);
+
+  /* Set our own event handler. */
+  tile_set_event_handler(&apinfo_tile, apinfo_event_handler);
 
   /* Add labels. */
   widget_label_init(&title_lbl, &apinfo_tile, 10, 5, 230, 45, "");
@@ -115,11 +138,11 @@ tile_t *tile_apinfo_init(void)
 
 void tile_apinfo_set_ap(wifi_ap_t *p_wifi_ap)
 {
-  p_ap_info = p_wifi_ap;
+  /* Copy our AP info into our local structure (cache). */
+  memcpy(&ap_info, p_wifi_ap, sizeof(wifi_ap_t));
 
   /* Copy ESSID. */
-  strncpy(psz_essid, (char *)p_wifi_ap->essid, 31);
-  widget_label_set_text(&title_lbl, psz_essid);
+  widget_label_set_text(&title_lbl, (char *)ap_info.essid);
 
   /* Format BSSID. */
   snprintf(
