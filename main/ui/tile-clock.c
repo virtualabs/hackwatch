@@ -1,5 +1,5 @@
 #include "tile-clock.h"
-#include "../digits.h"
+#include "../img/digits.h"
 
 #define HOURS_X       15
 #define HOURS_Y       10
