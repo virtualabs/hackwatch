@@ -11,25 +11,27 @@
 #include "ui/tile-apinfo.h"
 #include "ui/tile-clock.h"
 #include "ui/tile-settings.h"
-#include "wifi_icon.h"
+#include "img/wifi_icon.h"
+#include "img/settings_icon.h"
+#include "img/bluetooth_icon.h"
 
 void main_ui(void *parameter)
 {
   tile_t main_tile;
-  tile_t wifi_tile;
+  tile_t wifi_tile, settings_tile, bluetooth_tile;
   tile_t *p_deauth_tile, *p_apinfo_tile, *p_clock_tile, *p_settings_tile;
-  image_t *wifi;
+  image_t *wifi, *settings, *bluetooth;
   
   widget_label_t label_main;
   widget_label_t label_wifi;
-  widget_image_t wifi_img;
-  widget_label_t wifi_lbl;
+  widget_image_t wifi_img, settings_img, bluetooth_img;
+  widget_label_t wifi_lbl, settings_lbl, bluetooth_lbl;
 
   /* Main screen */
   tile_init(&main_tile, NULL);
   widget_label_init(&label_main, &main_tile, 80, 110, 220, 45, "Main tile");
 
-  /* Main screen */
+  /* WiFi screen */
   tile_init(&wifi_tile, NULL);
   wifi = load_image(wifi_icon);
   widget_image_init(&wifi_img, &wifi_tile, 70, (240-88)/2 - 20, 100, 88, wifi);
@@ -37,6 +39,17 @@ void main_ui(void *parameter)
 
   //widget_label_init(&label_wifi, &wifi_tile, 80, 110, 220, 45, "WiFi tile");
 
+  /* Settings screen */
+  tile_init(&settings_tile, NULL);
+  settings = load_image(settings_icon);
+  widget_image_init(&settings_img, &settings_tile, 80, (240-88)/2 - 20, 88, 88, settings);
+  widget_label_init(&settings_lbl, &settings_tile, 70, 150, 120, 50, "Settings");
+
+  /* Bluetooth screen */
+  tile_init(&bluetooth_tile, NULL);
+  bluetooth = load_image(bluetooth_icon);
+  widget_image_init(&bluetooth_img, &bluetooth_tile, 80, (240-88)/2 - 20, 88, 88, bluetooth);
+  widget_label_init(&bluetooth_lbl, &bluetooth_tile, 60, 150, 120, 50, "Bluetooth");
 
 
   p_deauth_tile = tile_scanner_init();
@@ -44,12 +57,20 @@ void main_ui(void *parameter)
   p_clock_tile = tile_clock_init();
   p_settings_tile = tile_settings_init();
   
+  /* Clock screen */
   //tile_link_right(&clock_tile, &wifi_tile);
   tile_link_right(p_clock_tile, &wifi_tile);
-  tile_link_left(p_clock_tile, &wifi_tile);
-  tile_link_bottom(p_clock_tile, p_settings_tile);
+
+  /* Wifi link */
+  tile_link_right(&wifi_tile, &settings_tile);
   tile_link_bottom(&wifi_tile, p_deauth_tile);
   tile_link_bottom(p_deauth_tile, p_apinfo_tile);
+
+  /* Settings link */
+  tile_link_right(&settings_tile, &bluetooth_tile);
+
+  /* Bluetooth link */
+  tile_link_right(&bluetooth_tile, p_clock_tile);
 
   /* Select our main tile. */
   ui_select_tile(p_clock_tile);
@@ -96,7 +117,7 @@ void app_main(void)
 
   /* Initialize WiFi controller. */
   wifi_ctrl_init();
-  wifi_set_mode(WIFI_SCANNER);
+  //wifi_set_mode(WIFI_SCANNER);
 
   xTaskCreate(main_ui, "main_ui", 10000, NULL, 1, NULL);
 }
