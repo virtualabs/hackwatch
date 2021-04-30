@@ -31,6 +31,8 @@ void widget_value_select_init(
 );
 int widget_value_select_get_value(widget_value_select_t *p_value_select);
 
-tile_t *tile_settings_init(void);
+tile_t *tile_settings_one_init(void);
+tile_t *tile_settings_two_init(void);
+tile_t *tile_settings_three_init(void);
 
 #endif /* __INC_HACKWATCH_SETTINGS_H */

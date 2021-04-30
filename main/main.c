@@ -19,7 +19,8 @@ void main_ui(void *parameter)
 {
   tile_t main_tile;
   tile_t wifi_tile, settings_tile, bluetooth_tile;
-  tile_t *p_deauth_tile, *p_apinfo_tile, *p_clock_tile, *p_settings_tile;
+  tile_t *p_deauth_tile, *p_apinfo_tile, *p_clock_tile;
+  tile_t *p_settings_one_tile, *p_settings_two_tile, *p_settings_three_tile;
   image_t *wifi, *settings, *bluetooth;
   
   widget_label_t label_main;
@@ -55,7 +56,9 @@ void main_ui(void *parameter)
   p_deauth_tile = tile_scanner_init();
   p_apinfo_tile = tile_apinfo_init();
   p_clock_tile = tile_clock_init();
-  p_settings_tile = tile_settings_init();
+  p_settings_one_tile = tile_settings_one_init();
+  p_settings_two_tile = tile_settings_two_init();
+  p_settings_three_tile = tile_settings_three_init();
   
   /* Clock screen */
   //tile_link_right(&clock_tile, &wifi_tile);
@@ -68,6 +71,9 @@ void main_ui(void *parameter)
 
   /* Settings link */
   tile_link_right(&settings_tile, &bluetooth_tile);
+  tile_link_bottom(&settings_tile, p_settings_one_tile);
+  tile_link_bottom(p_settings_one_tile, p_settings_two_tile);
+  tile_link_bottom(p_settings_two_tile, p_settings_three_tile);
 
   /* Bluetooth link */
   tile_link_right(&bluetooth_tile, p_clock_tile);
