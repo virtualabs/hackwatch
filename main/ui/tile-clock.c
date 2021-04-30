@@ -8,13 +8,18 @@
 #define DIGIT_WIDTH   56
 #define DIGIT_HEIGHT  90
 
+#define BLUE  RGB(0x5,0x9,0xf)
+
 #define TAG "[tile::clock]"
 
 
 static tile_t clock_tile;
 static image_t *clock_digits;
+static widget_label_t date_lbl;
 rtc_datetime_t datetime;
 int hours=12, mins=34;
+
+volatile char *psz_date[14];
 
 int _tile_clock_draw(tile_t *p_tile)
 {
@@ -99,6 +104,17 @@ void clock_update(void *parameter)
     twatch_rtc_get_date_time(&datetime);
     hours = datetime.hour;
     mins = datetime.minute;
+
+    snprintf(
+      psz_date,
+      14, 
+      "%02d/%02d/%04d", 
+      datetime.day, 
+      datetime.month, 
+      datetime.year
+    );
+    widget_label_set_text(&date_lbl, psz_date);
+
     vTaskDelay(300/portTICK_PERIOD_MS);
   }
 }
@@ -106,11 +122,18 @@ void clock_update(void *parameter)
 
 tile_t *tile_clock_init(void)
 {
+  /* Initialize date */
+  psz_date[0] = '\0';
+
   /* Load digits into memory. */
   clock_digits = load_image(digits_img);
 
   /* Initialize our tile. */
   tile_init(&clock_tile, NULL);
+
+  /* Add labels */
+  widget_label_init(&date_lbl, &clock_tile, (240-160)/2, 100, 160, 50, "01/01/1970");
+  widget_set_front_color(&date_lbl, BLUE);
 
   /* Set tile drawing function. */
   tile_set_drawfunc(&clock_tile, _tile_clock_draw);
