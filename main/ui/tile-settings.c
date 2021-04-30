@@ -118,7 +118,7 @@ void date_save_onclick(widget_t *p_widget)
   twatch_rtc_get_date_time(&datetime);
   datetime.day = days;
   datetime.month = months;
-  datetime.year = 2000 + years;
+  datetime.year = years;
   twatch_rtc_set_date_time(&datetime);
 }
 
@@ -168,7 +168,7 @@ tile_t *tile_settings_two_init(void)
 {
   /* Get date and time. */
   twatch_rtc_get_date_time(&datetime);
-  uint8_t year = datetime.year - 2000;
+  uint8_t year = datetime.year%100;
 
   /* Initialize our tile. */
   tile_init(&settings_two_tile, NULL);
