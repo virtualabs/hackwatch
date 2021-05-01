@@ -89,6 +89,12 @@ int widget_value_select_get_value(widget_value_select_t *p_value_select)
   return p_value_select->current_value;
 }
 
+void widget_value_select_set_value(widget_value_select_t *p_value_select, int value)
+{
+  p_value_select->current_value = value;
+  widget_value_select_update_value(p_value_select);
+}
+
 void clock_save_onclick(widget_t *p_widget)
 {
   int hours,minutes;
@@ -138,6 +144,52 @@ void settings_invert_onclick(widget_t *p_widget)
   }
 }
 
+int settings_one_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
+{
+  switch (event)
+  {
+    case TE_ENTER:
+      {
+        /* Get date and time. */
+        twatch_rtc_get_date_time(&datetime);
+
+        widget_value_select_set_value(&hours_select, datetime.hour);
+        widget_value_select_set_value(&mins_select, datetime.minute);
+      }
+      break;
+    
+    default:
+      break;
+  }
+
+  /* Success. */
+  return TE_PROCESSED;
+}
+
+int settings_two_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
+{
+  switch (event)
+  {
+    case TE_ENTER:
+      {
+        /* Get date and time. */
+        twatch_rtc_get_date_time(&datetime);
+        uint8_t year = datetime.year%100;
+
+        widget_value_select_set_value(&days_select, datetime.day);
+        widget_value_select_set_value(&months_select, datetime.month);
+        widget_value_select_set_value(&years_select, year);
+      }
+      break;
+  
+    default:
+      break;
+  }
+
+  /* Success. */
+  return TE_PROCESSED;
+}
+
 tile_t *tile_settings_one_init(void)
 {
   /* Get date and time. */
@@ -145,6 +197,7 @@ tile_t *tile_settings_one_init(void)
 
   /* Initialize our tile. */
   tile_init(&settings_one_tile, NULL);
+  tile_set_event_handler(&settings_one_tile, settings_one_tile_event_handler);
 
   /* Initialize our title label. */
   widget_label_init(&lbl_one_title, &settings_one_tile, 10, 5, 230, 45, "Settings 1/3");
@@ -172,6 +225,7 @@ tile_t *tile_settings_two_init(void)
 
   /* Initialize our tile. */
   tile_init(&settings_two_tile, NULL);
+  tile_set_event_handler(&settings_two_tile, settings_two_tile_event_handler);
 
   /* Initialize our title label. */
   widget_label_init(&lbl_two_title, &settings_two_tile, 10, 5, 230, 45, "Settings 2/3");
