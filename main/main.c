@@ -93,7 +93,7 @@ void app_main(void)
   //rtc_datetime_t datetime;
   esp_err_t ret;
 
-  esp_log_level_set("*", ESP_LOG_INFO);
+  esp_log_level_set("*", ESP_LOG_WARN);
 
   ui_init();
 
