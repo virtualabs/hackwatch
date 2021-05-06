@@ -58,6 +58,9 @@ int apinfo_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int v
 {
   switch (event)
   {
+    case TE_USERBTN:
+      break;
+
     case TE_ENTER:
       break;
 
