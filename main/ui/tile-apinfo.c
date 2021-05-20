@@ -58,12 +58,6 @@ int apinfo_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int v
 {
   switch (event)
   {
-    case TE_USERBTN:
-      break;
-
-    case TE_ENTER:
-      break;
-
     case TE_EXIT:
       {
         if (deauth_enabled)
@@ -75,6 +69,9 @@ int apinfo_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int v
           wifi_set_mode(WIFI_OFF);
         }
       }
+      break;
+
+    default:
       break;
   }
 

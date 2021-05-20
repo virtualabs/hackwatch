@@ -4,6 +4,7 @@
 #include "twatch.h"
 #include "ui/ui.h"
 #include "ui/frame.h"
+#include "timeset.h"
 
 typedef struct {
   widget_label_t label;

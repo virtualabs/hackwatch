@@ -8,6 +8,7 @@ static widget_label_t lbl_one_title, lbl_two_title, lbl_three_title;
 static widget_label_t lbl_month, lbl_year;
 static widget_button_t btn_orientation;
 static widget_button_t btn_save_clock, btn_save_date;
+static widget_timeset_t timeset;
 
 /**
  * Custom widget: value selection.
@@ -153,8 +154,8 @@ int settings_one_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, i
         /* Get date and time. */
         twatch_rtc_get_date_time(&datetime);
 
-        widget_value_select_set_value(&hours_select, datetime.hour);
-        widget_value_select_set_value(&mins_select, datetime.minute);
+        //widget_value_select_set_value(&hours_select, datetime.hour);
+        //widget_value_select_set_value(&mins_select, datetime.minute);
       }
       break;
     
@@ -202,16 +203,20 @@ tile_t *tile_settings_one_init(void)
   /* Initialize our title label. */
   widget_label_init(&lbl_one_title, &settings_one_tile, 10, 5, 230, 45, "Settings 1/3");
 
+  timeset_init(&timeset, &settings_one_tile, 0, 120, 0, 0);
+
+#if 0
   /* Initialize our hours selection widget. */
   widget_value_select_init(&hours_select, &settings_one_tile, 65, (240-50)/2, 40, 40, 0, 23, datetime.hour);
   widget_label_init(&lbl_clock, &settings_one_tile, 115, (240-50)/2, 20, 45, ":");
 
   /* Initialize our hours selection widget. */
   widget_value_select_init(&mins_select, &settings_one_tile, 135, (240-50)/2, 40, 40, 0, 59, datetime.minute);
+#endif
 
   /* Initialize our buttons. */
-  widget_button_init(&btn_save_clock, &settings_one_tile, 15, 190, 210, 45, "Save clock");
-  widget_button_set_handler(&btn_save_clock, clock_save_onclick);
+  //widget_button_init(&btn_save_clock, &settings_one_tile, 15, 190, 210, 45, "Save clock");
+  //widget_button_set_handler(&btn_save_clock, clock_save_onclick);
 
   /* Return our tile. */
   return &settings_one_tile;

@@ -26,9 +26,6 @@ int scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y,
 {
   switch (event)
   {
-    case TE_USERBTN:
-      break;
-
     case TE_ENTER:
       {
         /* Check if wifi is set in scanner mode. */
@@ -45,6 +42,9 @@ int scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y,
         /* Stop scanner. */
         wifi_set_mode(WIFI_OFF);
       }
+      break;
+
+    default:
       break;
   }
 
