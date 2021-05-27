@@ -13,20 +13,6 @@ ESP_EVENT_DEFINE_BASE(WIFI_CTRL_EVENT);
 wifi_controller_t g_wifi_ctrl;
 
 typedef struct {
-	unsigned frame_ctrl:16;
-	unsigned duration_id:16;
-	uint8_t addr1[6]; /* receiver address */
-	uint8_t addr2[6]; /* sender address */
-	uint8_t addr3[6]; /* filtering address */
-	unsigned sequence_ctrl:16;
-	uint8_t addr4[6]; /* optional */
-} wifi_ieee80211_mac_hdr_t;
-
-typedef struct {
-
-} wifi_ieee80211_probe_resp_t;
-
-typedef struct {
 	wifi_ieee80211_mac_hdr_t hdr;
 	uint8_t payload[0]; /* network data ended with 4 bytes csum (CRC32) */
 } wifi_ieee80211_packet_t;
@@ -150,6 +136,11 @@ void wifi_disable()
 }
 
 
+void wifi_set_channel(int channel)
+{
+  esp_wifi_set_channel(channel, 0);
+}
+
 /******************************************************************
  *                             WIFI SNIFFER
  *****************************************************************/
@@ -177,6 +168,14 @@ void wifi_sniffer_packet_cb(void* buff, wifi_promiscuous_pkt_type_t type)
   wifi_probe_req_t probe_req;
   wifi_probe_rsp_t probe_rsp;
 
+  const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff;
+
+  if (g_wifi_ctrl.pfn_on_packet_received != NULL)
+  {
+    g_wifi_ctrl.pfn_on_packet_received(ppkt);
+  }
+
+#if 0
   uint8_t pkt_type, pkt_subtype;
   uint8_t dest[6], source[6], bssid[6];
   char essid[32];
@@ -214,8 +213,8 @@ void wifi_sniffer_packet_cb(void* buff, wifi_promiscuous_pkt_type_t type)
         break;
 
     }
-
   }
+#endif
 }
 
 
@@ -564,6 +563,9 @@ void wifi_ctrl_init(void)
   g_wifi_ctrl.evt_loop_args.task_core_id = tskNO_AFFINITY;
   g_wifi_ctrl.evt_loop_initialized = false;
 
+  /* Initialize our callbacks. */
+  g_wifi_ctrl.pfn_on_packet_received = NULL;
+
   /* Create our custom loop. */
   if (esp_event_loop_create(&g_wifi_ctrl.evt_loop_args, &g_wifi_ctrl.evt_loop_handle) == ESP_OK)
   {
@@ -573,6 +575,19 @@ void wifi_ctrl_init(void)
     ESP_LOGE(TAG, "cannot create event loop for wifi controller.");
 }
 
+/**
+ * void wifi_set_sniffer_handler()
+()
+ * 
+ * @brief: Set WiFi packet sniffer callback
+ * @param callback: pointer to a FWifiPacketReceivedCb callback function.
+ **/
+
+void wifi_set_sniffer_handler(FWifiPacketReceivedCb callback)
+{
+  /* Set our sniffer callback. */
+  g_wifi_ctrl.pfn_on_packet_received = callback;
+}
 
 /**
  * wifi_set_mode()
