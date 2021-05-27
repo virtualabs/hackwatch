@@ -1,6 +1,12 @@
 #include "tile-settings.h"
 
 static tile_t settings_one_tile, settings_two_tile, settings_three_tile;
+
+/* Time saved confirm modal */
+static modal_t confirm;
+static widget_button_t confirm_btn;
+static widget_label_t confirm_txt;
+
 static widget_value_select_t hours_select, mins_select, lbl_clock;
 static widget_value_select_t days_select, months_select, years_select;
 static rtc_datetime_t datetime;
@@ -11,7 +17,13 @@ static widget_button_t btn_save_clock, btn_save_date;
 static widget_timeset_t timeset;
 
 /**
- * Custom widget: value selection.
+ * _constrain()
+ * 
+ * @brief: Constrain `value` between `min` and `max`.
+ * @param min: min value
+ * @param max: max value
+ * @param value: value to constrain
+ * @return: constrained value.
  **/
 
 int _constrain(int min, int max, int value)
@@ -23,6 +35,14 @@ int _constrain(int min, int max, int value)
   return value;
 }
 
+
+/**
+ * widget_value_select_update_value()
+ * 
+ * @brief: Update the value of a widget_value_select_t widget.
+ * @param p_value_select: pointer to a `widget_value_select_t` structure
+ **/
+
 void widget_value_select_update_value(widget_value_select_t *p_value_select)
 {
   /* Set label text. */
@@ -32,6 +52,18 @@ void widget_value_select_update_value(widget_value_select_t *p_value_select)
     p_value_select->psz_label_text
   );
 }
+
+
+/**
+ * widget_value_select_eventhandler()
+ * 
+ * @brief: Select widget event handler.
+ * @param p_widget: pointer to a `widget_t` structure
+ * @param p_event: event
+ * @param x: X-coordinate for the event
+ * @param y: Y-coordinate for the event
+ * @param velocity: swipe speed (in case of a swipe event)
+ **/
 
 int widget_value_select_eventhandler(widget_t *p_widget, widget_event_t p_event, int x, int y, int velocity)
 {
@@ -53,6 +85,20 @@ int widget_value_select_eventhandler(widget_t *p_widget, widget_event_t p_event,
       return WE_ERROR;
   }
 }
+
+/**
+ * widget_value_select_init()
+ * 
+ * @brief: initialize a widget_value_select widget
+ * @param p_tile: pointer to parent tile
+ * @param x: X position of the widget
+ * @param y: Y position of the widget
+ * @param width: widget width
+ * @param height: widget height
+ * @param min_value: selection min value
+ * @param max_value: selection max value
+ * @param current_value: selection current value
+ **/
 
 void widget_value_select_init(
   widget_value_select_t *p_value_select,
@@ -85,10 +131,28 @@ void widget_value_select_init(
   widget_value_select_update_value(p_value_select);
 }
 
+
+/**
+ * widget_value_select_get_value()
+ * 
+ * @brief: Retrieve the current value of a select value widget
+ * @param p_value_select: pointer to a `widget_value_select_t` structure
+ * @return current value
+ **/
+
 int widget_value_select_get_value(widget_value_select_t *p_value_select)
 {
   return p_value_select->current_value;
 }
+
+
+/**
+ * widget_value_select_set_value()
+ * 
+ * @brief: Set the current value of a select value widget
+ * @param p_value_select: pointer to a `widget_value_select_t` structure
+ * @param value: value to set
+ **/
 
 void widget_value_select_set_value(widget_value_select_t *p_value_select, int value)
 {
@@ -96,21 +160,42 @@ void widget_value_select_set_value(widget_value_select_t *p_value_select, int va
   widget_value_select_update_value(p_value_select);
 }
 
+
+/**
+ * clock_save_onclick()
+ * 
+ * @brief: time save button callback handler
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
+
 void clock_save_onclick(widget_t *p_widget)
 {
-  int hours,minutes;
-
-  /* Read hours and minutes. */
-  hours = widget_value_select_get_value(&hours_select);
-  minutes = widget_value_select_get_value(&mins_select);
-
-  /* Set datetime. */
   twatch_rtc_get_date_time(&datetime);
-  datetime.hour = hours;
-  datetime.minute = minutes;
-  datetime.second = 0;
+  timeset_get_time(&timeset, &datetime);
   twatch_rtc_set_date_time(&datetime);
+
+  ui_set_modal(&confirm);
 }
+
+/**
+ * clock_save_confirm()
+ * 
+ * @brief: time save confirm modal handler
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
+
+void clock_save_confirm(widget_t *p_widget)
+{
+  ui_unset_modal();
+}
+
+
+/**
+ * date_save_onclick()
+ * 
+ * @brief: Date save onclick handler.
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
 
 void date_save_onclick(widget_t *p_widget)
 {
@@ -129,6 +214,14 @@ void date_save_onclick(widget_t *p_widget)
   twatch_rtc_set_date_time(&datetime);
 }
 
+
+/**
+ * settings_invert_onclick()
+ * 
+ * @brief: Screen rotation button onclick handler.
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
+
 void settings_invert_onclick(widget_t *p_widget)
 {
   if (twatch_screen_is_inverted())
@@ -145,6 +238,18 @@ void settings_invert_onclick(widget_t *p_widget)
   }
 }
 
+
+/**
+ * settings_one_tile_event_handler()
+ * 
+ * @brief: First setting screen event handler
+ * @param p_tile: pointer to a tile
+ * @param event: tile event
+ * @param x: x-coord for the event
+ * @param y: y-coord for the event
+ * @param velocity: swipe speed (if swipe event)
+ **/
+
 int settings_one_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
 {
   switch (event)
@@ -153,6 +258,9 @@ int settings_one_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, i
       {
         /* Get date and time. */
         twatch_rtc_get_date_time(&datetime);
+
+        /* Update time. */
+        timeset_set_time(&timeset, &datetime);
 
         //widget_value_select_set_value(&hours_select, datetime.hour);
         //widget_value_select_set_value(&mins_select, datetime.minute);
@@ -167,6 +275,18 @@ int settings_one_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, i
   return TE_PROCESSED;
 }
 
+
+/**
+ * settings_two_tile_event_handler()
+ * 
+ * @brief: Second setting screen event handler
+ * @param p_tile: pointer to a tile
+ * @param event: tile event
+ * @param x: x-coord for the event
+ * @param y: y-coord for the event
+ * @param velocity: swipe speed (if swipe event)
+ **/
+
 int settings_two_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
 {
   switch (event)
@@ -177,6 +297,7 @@ int settings_two_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, i
         twatch_rtc_get_date_time(&datetime);
         uint8_t year = datetime.year%100;
 
+        /* Update date. */
         widget_value_select_set_value(&days_select, datetime.day);
         widget_value_select_set_value(&months_select, datetime.month);
         widget_value_select_set_value(&years_select, year);
@@ -191,6 +312,12 @@ int settings_two_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, i
   return TE_PROCESSED;
 }
 
+/**
+ * tile_settings_one_init()
+ * 
+ * @brief: Initialize our first setting screen (time)
+ **/
+
 tile_t *tile_settings_one_init(void)
 {
   /* Get date and time. */
@@ -203,24 +330,54 @@ tile_t *tile_settings_one_init(void)
   /* Initialize our title label. */
   widget_label_init(&lbl_one_title, &settings_one_tile, 10, 5, 230, 45, "Settings 1/3");
 
-  timeset_init(&timeset, &settings_one_tile, 0, 120, 0, 0);
+  timeset_init(&timeset, &settings_one_tile, 0, 60, 0, 0);
 
-#if 0
-  /* Initialize our hours selection widget. */
-  widget_value_select_init(&hours_select, &settings_one_tile, 65, (240-50)/2, 40, 40, 0, 23, datetime.hour);
-  widget_label_init(&lbl_clock, &settings_one_tile, 115, (240-50)/2, 20, 45, ":");
+  /* Get hours and minutes and set timeset. */
+  timeset_set_time(&timeset, &datetime);
 
-  /* Initialize our hours selection widget. */
-  widget_value_select_init(&mins_select, &settings_one_tile, 135, (240-50)/2, 40, 40, 0, 59, datetime.minute);
-#endif
+  /* Initialize our modal box (confirm). */
+  modal_init(&confirm, 20, 80, 200, 120);
+  confirm.tile.background_color = RGB(0x0, 0x8, 0xc);
+  widget_button_init(
+    &confirm_btn,
+    &confirm.tile,
+    50,
+    80,
+    100,
+    30,
+    "OK"
+  );
+  widget_set_bg_color(&confirm_btn.widget, RGB(0xe, 0xe, 0xe));
+  widget_set_front_color(&confirm_btn.widget, RGB(0, 0, 0));
+
+  widget_button_set_handler(&confirm_btn, clock_save_confirm);
+  widget_label_init(
+    &confirm_txt,
+    &confirm.tile,
+    10,
+    5,
+    180,
+    30,
+    "Time saved !"
+  );
+  widget_set_bg_color(&confirm_txt.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_front_color(&confirm_txt.widget, RGB(0xf, 0xf, 0xf));
+  
 
   /* Initialize our buttons. */
-  //widget_button_init(&btn_save_clock, &settings_one_tile, 15, 190, 210, 45, "Save clock");
-  //widget_button_set_handler(&btn_save_clock, clock_save_onclick);
+  widget_button_init(&btn_save_clock, &settings_one_tile, 15, 190, 210, 45, "Save");
+  widget_button_set_handler(&btn_save_clock, clock_save_onclick);
 
   /* Return our tile. */
   return &settings_one_tile;
 }
+
+
+/**
+ * tile_settings_two_init()
+ * 
+ * @brief: Initialize our second setting screen (date)
+ **/
 
 tile_t *tile_settings_two_init(void)
 {
@@ -253,6 +410,13 @@ tile_t *tile_settings_two_init(void)
   /* Return our tile. */
   return &settings_two_tile;
 }
+
+
+/**
+ * tile_settings_three_init()
+ * 
+ * @brief: Initialize our thord setting screen (screen rotation)
+ **/
 
 tile_t *tile_settings_three_init(void)
 {

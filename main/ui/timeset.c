@@ -130,8 +130,6 @@ void _timeset_drawfunc(widget_t *p_widget)
     delta_x + DIGIT_WIDTH/2 + 1 + DIGIT_WIDTH*2 + 8,
     delta_y + DIGIT_HEIGHT + 5
   );
-
-
 }
 
 void update_time(widget_t *p_widget, int x, int y, bool longpress)
@@ -227,10 +225,22 @@ int _timeset_eventhandler(widget_t *p_widget, widget_event_t p_event, int x, int
 }
 
 
+void timeset_set_time(widget_timeset_t *p_timeset, rtc_datetime_t *p_datetime)
+{
+  /* Set hours and minutes. */
+  p_timeset->hours = p_datetime->hour;
+  p_timeset->minutes = p_datetime->minute;
+}
+
+void timeset_get_time(widget_timeset_t *p_timeset, rtc_datetime_t *p_datetime)
+{
+  /* Copy hours and minutes into p_datetime. */
+  p_datetime->hour = p_timeset->hours;
+  p_datetime->minute = p_timeset->minutes;
+}
+
 void timeset_init(widget_timeset_t *p_timeset, tile_t *p_tile, int x, int y, int hours, int minutes)
 {
-  printf("timeset_init: p_timeset: %08x\r\n", (uint32_t)p_timeset);
-
   /* Initialize our widget. */
   widget_init(&p_timeset->base_widget, p_tile, x, y, TIMESET_WIDTH, TIMESET_HEIGHT);
   widget_set_drawfunc(&p_timeset->base_widget, _timeset_drawfunc);
