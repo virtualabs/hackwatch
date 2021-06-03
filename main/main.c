@@ -12,6 +12,7 @@
 #include "ui/tile-clock.h"
 #include "ui/tile-settings.h"
 #include "ui/tile-channels.h"
+#include "ui/tile-rogueap.h"
 #include "img/wifi_icon.h"
 #include "img/settings_icon.h"
 #include "img/bluetooth_icon.h"
@@ -22,6 +23,7 @@ void main_ui(void *parameter)
   tile_t wifi_tile, settings_tile, bluetooth_tile;
   tile_t *p_deauth_tile, *p_apinfo_tile, *p_clock_tile, *p_channels_tile;
   tile_t *p_settings_one_tile, *p_settings_two_tile, *p_settings_three_tile;
+  tile_t *p_rogue_tile;
   image_t *wifi, *settings, *bluetooth;
   
   widget_label_t label_main;
@@ -61,17 +63,19 @@ void main_ui(void *parameter)
   p_settings_one_tile = tile_settings_one_init();
   p_settings_two_tile = tile_settings_two_init();
   p_settings_three_tile = tile_settings_three_init();
+  p_rogue_tile = tile_rogueap_init();
   
   /* Clock screen */
   //tile_link_right(&clock_tile, &wifi_tile);
   tile_link_right(p_clock_tile, &wifi_tile);
 
   /* Wifi link */
+  tile_link_top(&wifi_tile, p_rogue_tile);
   tile_link_right(&wifi_tile, &settings_tile);
-  tile_link_bottom(&wifi_tile, p_deauth_tile);
+  tile_link_bottom(&wifi_tile, p_channels_tile);
+  tile_link_bottom(p_channels_tile, p_deauth_tile);
   tile_link_bottom(p_deauth_tile, p_apinfo_tile);
-  tile_link_top(&wifi_tile, p_channels_tile);
-
+  
   /* Settings link */
   tile_link_right(&settings_tile, &bluetooth_tile);
   tile_link_bottom(&settings_tile, p_settings_one_tile);

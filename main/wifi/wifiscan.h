@@ -24,7 +24,7 @@
 #define WSCAN_RSSI_GOOD_COLOR  RGB(1, 7, 0)
 
 
-#define WSCAN_MAX_APS   20
+#define WSCAN_MAX_APS   10
 
 typedef enum {
   WS_EVENT_SELECTED

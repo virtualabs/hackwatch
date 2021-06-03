@@ -17,6 +17,7 @@ set(
  "ui/tile-clock.c"
  "ui/tile-settings.c"
  "ui/tile-channels.c"
+ "ui/tile-rogueap.c"
  "ui/timeset.c"
 )
 

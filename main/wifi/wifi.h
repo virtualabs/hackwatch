@@ -57,6 +57,7 @@ typedef enum {
   WIFI_SNIFFER,
   WIFI_SCANNER,
   WIFI_DEAUTH,
+  WIFI_ROGUEAP,
   WIFI_AP,
   WIFI_STA
 } wifi_controller_mode_t;
@@ -84,6 +85,9 @@ typedef struct tWifiController {
   uint8_t deauth_target[6];
   int deauth_channel;
 
+  /* WiFi rogueAP */
+  wifi_ap_t *p_rogueap_target;
+
   /* WiFi callback. */
   FWifiPacketReceivedCb pfn_on_packet_received;
 
@@ -100,6 +104,7 @@ void wifi_set_mode(wifi_controller_mode_t mode);
 void wifi_set_channel(int channel);
 wifi_controller_mode_t wifi_get_mode(void);
 void wifi_deauth_target(uint8_t *p_bssid, int channel);
+void wifi_rogueap_set_target(wifi_ap_t *p_target);
 void wifi_set_sniffer_handler(FWifiPacketReceivedCb callback);
 
 /* Event handling. */
