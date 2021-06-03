@@ -51,6 +51,7 @@ void channels_on_pkt_sniffed(wifi_promiscuous_pkt_t *p_wifi_pkt)
 
 int channels_draw(tile_t *p_tile)
 {
+  char *tableau[] = {"1","2","3","4","5","6","7","8","9","","11","","","14"};
   int i, avg, height;
 
   /* Set drawing window. */
@@ -73,6 +74,15 @@ int channels_draw(tile_t *p_tile)
   /* Draw title. */
   tile_draw_text_x2(p_tile, 3, 3, "Channel scan", RGB(0xf,0xf,0xf));
 
+  /* Draw channel labels (source: rebelor49) */
+  for (i=0; i<14; i++)
+  {
+    if (tableau[i][0] != 0)
+    {
+      tile_draw_text(p_tile, (i>9)?(14 + i*16 - 2):(14 + i*16), 220, tableau[i], RGB(0xb,0xb,0xb));
+    }
+  }
+
   /* Draw a frame */
   tile_draw_line(
     p_tile,
@@ -87,15 +97,15 @@ int channels_draw(tile_t *p_tile)
     2,
     40,
     2,
-    220,
+    210,
     RGB(0x0, 0x8, 0xc)
   );
   tile_draw_line(
     p_tile,
     3,
-    221,
+    211,
     240-6,
-    221,
+    211,
     RGB(0x0, 0x8, 0xc)
   );
   tile_draw_line(
@@ -103,7 +113,7 @@ int channels_draw(tile_t *p_tile)
     240-6,
     40,
     240-6,
-    220,
+    210,
     RGB(0x0, 0x8, 0xc)
   );
 
@@ -128,7 +138,7 @@ int channels_draw(tile_t *p_tile)
       CHANNELS_TABLE_X + i*CHANNELS_COLUMN_WIDTH + CHANNELS_COLUMN_WIDTH/2,
       40,
       CHANNELS_TABLE_X + i*CHANNELS_COLUMN_WIDTH + CHANNELS_COLUMN_WIDTH/2,
-      CHANNELS_TABLE_Y + CHANNELS_COLUMN_HEIGHT,
+      CHANNELS_TABLE_Y + CHANNELS_COLUMN_HEIGHT + 5,
       RGB(0x3,0x3,0x3)
     );
 
