@@ -127,6 +127,10 @@ void wifi_enable(wifi_driver_mode_t mode)
 
 void wifi_disable()
 {
+    /* Sanity check. */
+  if (!g_wifi_ctrl.b_enabled)
+    return;
+
   /* Disable WiFi. */
   g_wifi_ctrl.driver_mode = WIFI_DRIVER_OFF;
   ESP_ERROR_CHECK(esp_wifi_stop());
@@ -251,11 +255,7 @@ void wifi_rogueap_disable(void)
   vTaskDelete(g_wifi_ctrl.current_task_handle);
 
   /* Stop WiFi. */
-  if (g_wifi_ctrl.b_enabled)
-  {
-    wifi_disable();
-    g_wifi_ctrl.b_enabled = false;
-  }
+  wifi_disable();
 }
 
 
@@ -369,11 +369,7 @@ void wifi_sniffer_disable(void)
   esp_wifi_set_promiscuous(false);
 
   /* Stop WiFi. */
-  if (g_wifi_ctrl.b_enabled)
-  {
-    wifi_disable();
-    g_wifi_ctrl.b_enabled = false;
-  }
+  wifi_disable();
 }
 
 
@@ -461,11 +457,7 @@ void wifi_deauth_disable(void)
   vTaskDelete(g_wifi_ctrl.current_task_handle);
 
   /* Stop WiFi. */
-  if (g_wifi_ctrl.b_enabled)
-  {
-    wifi_disable();
-    g_wifi_ctrl.b_enabled = false;
-  }
+  wifi_disable();
 }
 
 
@@ -507,11 +499,7 @@ void wifi_scanner_disable(void)
   esp_wifi_scan_stop();
 
   /* Stop WiFi. */
-  if (g_wifi_ctrl.b_enabled)
-  {
-    wifi_disable();
-    g_wifi_ctrl.b_enabled = false;
-  }
+  wifi_disable();
 
   /* Stop our scanner task. */
   vTaskDelete(g_wifi_ctrl.current_task_handle);
@@ -527,10 +515,7 @@ void wifi_scanner_disable(void)
 void wifi_scanner_enable(void)
 {
   /* Enable WiFi if disabled. */
-  if (!g_wifi_ctrl.b_enabled)
-  {
-    wifi_enable(WIFI_DRIVER_STA);
-  }
+  wifi_enable(WIFI_DRIVER_STA);
 
   /* Configure scanner. */
   memset(&g_wifi_ctrl.scan_config, 0, sizeof(wifi_scan_config_t));
@@ -737,6 +722,10 @@ void wifi_set_sniffer_handler(FWifiPacketReceivedCb callback)
 
 void wifi_set_mode(wifi_controller_mode_t mode)
 {
+  /* Sanity check */
+  if (wifi_get_mode() == mode)
+    return;
+
   ESP_LOGI(TAG, "set mode to %d", mode);
   ESP_LOGD(TAG, "disabling old mode (%d) ...", g_wifi_ctrl.mode);
 
