@@ -195,12 +195,8 @@ int channels_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y
   {
     case TE_ENTER:
       {
-        /* Check if wifi is set in scanner mode. */
-        if (wifi_get_mode() != WIFI_SNIFFER)
-        {
-          /* Enable scanner. */
-          wifi_set_mode(WIFI_SNIFFER);
-        }
+        /* Enable scanner. */
+        wifi_set_mode(WIFI_SNIFFER);
 
         /* Set channel. */
         g_channel = 1;

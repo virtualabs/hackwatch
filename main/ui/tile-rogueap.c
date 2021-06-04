@@ -5,7 +5,6 @@ widget_label_t title_lbl, target_lbl, essid_lbl, channel_lbl;
 widget_button_t select_btn, startstop_btn;
 
 /* AP selection. */
-bool b_rogueap_enabled = false;
 modal_t ap_select_modal;
 wifiscan_t ap_wifiscan;
 widget_button_t ap_select_ok_btn;
@@ -20,12 +19,8 @@ int rogueap_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y,
   {
     case TE_ENTER:
       {
-        /* Check if wifi is set in scanner mode. */
-        if (wifi_get_mode() != WIFI_SCANNER)
-        {
-          /* Enable scanner. */
-          wifi_set_mode(WIFI_SCANNER);
-        }
+        /* Enable scanner. */
+        wifi_set_mode(WIFI_SCANNER);
       }
       break;
 
@@ -52,13 +47,12 @@ void select_btn_onclick(struct widget_t *p_widget)
 
 void start_btn_onclick(struct widget_t *p_widget)
 {
-  if (!b_rogueap_enabled)
+  if (wifi_get_mode() != WIFI_ROGUEAP)
   {
     if (target_ap != NULL)
     {
       printf("Starting rogue AP for %s\r\n", target_ap->essid);
       widget_button_set_text(&startstop_btn, "Stop");
-      b_rogueap_enabled = true;
       wifi_rogueap_set_target(target_ap);
     }
     else
@@ -68,13 +62,8 @@ void start_btn_onclick(struct widget_t *p_widget)
   }
   else
   {
-    /* Check if wifi is set in scanner mode. */
-    if (wifi_get_mode() != WIFI_SCANNER)
-    {
-      /* Enable scanner. */
-      wifi_set_mode(WIFI_SCANNER);
-    }
-    b_rogueap_enabled = false;
+    /* Enable scanner. */
+    wifi_set_mode(WIFI_SCANNER);
     widget_button_set_text(&startstop_btn, "Start");
   }
 }
