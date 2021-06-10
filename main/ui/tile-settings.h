@@ -2,8 +2,10 @@
 #define __INC_HACKWATCH_SETTINGS_H
 
 #include "twatch.h"
+#include "hal/screen.h"
 #include "ui/ui.h"
 #include "ui/frame.h"
+#include "ui/slider.h"
 #include "timeset.h"
 
 typedef struct {
