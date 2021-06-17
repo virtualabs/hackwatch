@@ -17,6 +17,7 @@
 #include "img/settings_icon.h"
 #include "img/bluetooth_icon.h"
 
+
 void main_ui(void *parameter)
 {
   tile_t main_tile;
@@ -88,6 +89,9 @@ void main_ui(void *parameter)
   /* Select our main tile. */
   ui_select_tile(p_clock_tile);
 
+  /* Enable eco mode. */
+  enable_ecomode();
+
   while (1)
   {
     ui_process_events();
@@ -97,7 +101,6 @@ void main_ui(void *parameter)
 
 void app_main(void)
 {
-  //rtc_datetime_t datetime;
   esp_err_t ret;
 
   esp_log_level_set("*", ESP_LOG_WARN);
