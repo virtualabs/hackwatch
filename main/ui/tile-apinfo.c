@@ -125,7 +125,9 @@ tile_t *tile_apinfo_init(void)
   widget_label_set_fontsize(&rssi, LABEL_FONT_SMALL);
 
   /* Add deauth button. */
-  widget_button_init(&deauth_btn, &apinfo_tile, (240 - 120)/2, 195, 120, 30, "Deauth");
+  widget_button_init(&deauth_btn, &apinfo_tile, (240 - 120)/2, 175, 120, 50, "Deauth");
+  widget_set_bg_color(&deauth_btn.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_border_color(&deauth_btn.widget, RGB(0x0, 0x8, 0xc));
   widget_button_set_handler(&deauth_btn, deauth_toggle);
 
   /* Add a frame. */
