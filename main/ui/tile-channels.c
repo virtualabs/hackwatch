@@ -195,6 +195,9 @@ int channels_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y
   {
     case TE_ENTER:
       {
+        /* Disable eco mode. */
+        disable_ecomode();
+
         /* Enable scanner. */
         wifi_set_mode(WIFI_SNIFFER);
 
@@ -217,6 +220,9 @@ int channels_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y
 
         /* Unregister our packet sniffer callback. */
         wifi_set_sniffer_handler(NULL);
+
+        /* Re-enable eco mode. */
+        enable_ecomode();
       }
       break;
 
