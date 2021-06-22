@@ -14,7 +14,7 @@ static image_t *p_font;
 static image_t *p_ticks;
 
 
-void _timeset_drawfunc(widget_t *p_widget)
+int _timeset_drawfunc(widget_t *p_widget)
 {
   int delta_x, delta_y;
 
@@ -130,6 +130,7 @@ void _timeset_drawfunc(widget_t *p_widget)
     delta_x + DIGIT_WIDTH/2 + 1 + DIGIT_WIDTH*2 + 8,
     delta_y + DIGIT_HEIGHT + 5
   );
+  return 0;
 }
 
 void update_time(widget_t *p_widget, int x, int y, bool longpress)

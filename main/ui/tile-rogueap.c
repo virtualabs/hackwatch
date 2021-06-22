@@ -46,13 +46,13 @@ int rogueap_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y,
   return TE_PROCESSED;
 }
 
-void select_btn_onclick(struct widget_t *p_widget)
+void select_btn_onclick(widget_t *p_widget)
 {
   /* Activate AP selection dialog box (modal). */
   ui_set_modal(&ap_select_modal);
 }
 
-void start_btn_onclick(struct widget_t *p_widget)
+void start_btn_onclick(widget_t *p_widget)
 {
   if (wifi_get_mode() != WIFI_ROGUEAP)
   {
@@ -75,9 +75,10 @@ void start_btn_onclick(struct widget_t *p_widget)
   }
 }
 
-void ap_select_modal_onclick(struct widget_t *p_widget)
+void ap_select_modal_onclick(widget_t *p_widget)
 {
-  wifi_ap_t *ap_selected;
+  // unused variable
+  // wifi_ap_t *ap_selected;
 
   /* Do we have a selected AP ? */
   target_ap = wifiscan_get_selected(&ap_wifiscan);
@@ -102,11 +103,11 @@ tile_t *tile_rogueap_init(void)
 {
   /* Initialize our tile. */
   tile_init(&rogueap_tile, NULL);
-  tile_set_event_handler(&rogueap_tile, rogueap_tile_event_handler);
+  tile_set_event_handler((tile_t *)&rogueap_tile, rogueap_tile_event_handler);
 
   /* Add title. */
   widget_label_init(&title_lbl, &rogueap_tile, 3, 3, 200, 40, "Rogue AP");
-  widget_set_front_color(&title_lbl, RGB(0x0, 0x8, 0xc));
+  widget_set_front_color((widget_t *)&title_lbl, RGB(0x0, 0x8, 0xc));
 
   /* Add frame. */
   widget_frame_init(&ap_frame, &rogueap_tile, 2, 39, 240-2, 240-39-2);

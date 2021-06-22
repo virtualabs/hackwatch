@@ -7,7 +7,7 @@ static modal_t confirm;
 static widget_button_t confirm_btn;
 static widget_label_t confirm_txt;
 
-static widget_value_select_t hours_select, mins_select, lbl_clock;
+// static widget_value_select_t hours_select, mins_select, lbl_clock;
 static widget_value_select_t days_select, months_select, years_select;
 static rtc_datetime_t datetime;
 static widget_label_t lbl_one_title, lbl_two_title, lbl_three_title;
