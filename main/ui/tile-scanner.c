@@ -30,6 +30,9 @@ int scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y,
       {
         /* Enable scanner. */
         wifi_set_mode(WIFI_SCANNER);
+
+        /* Disable eco mode. */
+        disable_ecomode();
       }
       break;
 
@@ -37,6 +40,9 @@ int scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y,
       {
         /* Stop scanner. */
         wifi_set_mode(WIFI_OFF);
+
+        /* Re-enable eco mode. */
+        enable_ecomode();
       }
       break;
 

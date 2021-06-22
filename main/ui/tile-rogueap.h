@@ -4,6 +4,7 @@
 #include "twatch.h"
 #include "ui/ui.h"
 #include "ui/button.h"
+#include "ui/frame.h"
 #include "../wifi/wifi.h"
 #include "../wifi/wifiscan.h"
 
