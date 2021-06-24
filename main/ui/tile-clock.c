@@ -16,6 +16,7 @@
 static tile_t clock_tile;
 static image_t *clock_digits;
 static widget_label_t date_lbl;
+static widget_batt_t batt;
 rtc_datetime_t datetime;
 int hours=12, mins=34;
 
@@ -134,6 +135,9 @@ tile_t *tile_clock_init(void)
   /* Add labels */
   widget_label_init(&date_lbl, &clock_tile, (240-160)/2, 100, 160, 50, "01/01/1970");
   widget_set_front_color(&date_lbl, BLUE);
+
+  /* Add battery */
+  widget_battery_init(&batt, &clock_tile, 191, 10);
 
   /* Set tile drawing function. */
   tile_set_drawfunc(&clock_tile, _tile_clock_draw);

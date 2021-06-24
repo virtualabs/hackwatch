@@ -4,6 +4,7 @@
 #include "twatch.h"
 #include "ui/ui.h"
 #include "ui/frame.h"
+#include "battery.h"
 
 tile_t *tile_clock_init(void);
 

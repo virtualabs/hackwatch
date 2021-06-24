@@ -19,6 +19,7 @@ set(
  "ui/tile-channels.c"
  "ui/tile-rogueap.c"
  "ui/timeset.c"
+ "ui/battery.c"
 )
 
 register_component()

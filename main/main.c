@@ -118,7 +118,6 @@ void app_main(void)
   }
 
   twatch_vibrate_init();
-  twatch_pmu_init();
   twatch_screen_init();
   twatch_rtc_init();
   /*

@@ -420,7 +420,9 @@ void backlight_onchanged(widget_slider_t *p_widget_slider/*, int new_value, int 
 {
   int new_value = widget_slider_get_value(p_widget_slider);
   int before = twatch_screen_get_backlight();
+
   if (before != new_value) {
+    twatch_screen_set_default_backlight(new_value);
     twatch_screen_set_backlight(new_value);
     widget_slider_set_value(p_widget_slider, new_value);
   }
@@ -446,8 +448,8 @@ tile_t *tile_settings_three_init(void)
   widget_button_set_handler(&btn_orientation, settings_invert_onclick);
 
   /* Initialize our backlight slider */
-  widget_slider_init(&sld_backlight, &settings_three_tile, 2, 200, 240-2, 20);
-  widget_slider_configure(&sld_backlight, 10, 5000, SCREEN_DEFAULT_BACKLIGHT, -1);
+  widget_slider_init(&sld_backlight, &settings_three_tile, 2, 180, 240-4, 60);
+  widget_slider_configure(&sld_backlight, 10, 5000, twatch_screen_get_default_backlight(), -1);
   widget_slider_set_handler(&sld_backlight, backlight_onchanged);
 
   /* Return our tile. */
