@@ -50,9 +50,6 @@ typedef struct {
 
 esp_err_t esp_wifi_80211_tx_(wifi_interface_t ifx, const void *buffer, int len, bool en_sys_seq)
 {
-  // unused variable
-  // void *p_alloc;
-  // uint16_t *p0;
   uint32_t value;
   s1 *p_mac_frame;
 
@@ -381,11 +378,6 @@ wifi_sniffer_packet_type2str(wifi_promiscuous_pkt_type_t type)
 
 void wifi_sniffer_packet_cb(void* buff, wifi_promiscuous_pkt_type_t type)
 {
-  // unused variables
-  // wifi_pkt_subtype_t psubtype;
-  // wifi_probe_req_t probe_req;
-  // wifi_probe_rsp_t probe_rsp;
-
   wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff;
 
   if (g_wifi_ctrl.pfn_on_packet_received != NULL)
@@ -460,8 +452,6 @@ void wifi_sniffer_disable(void)
 
 void wifi_sniffer_enable(void)
 {
-  // unused variable
-  // char test[]="thisisatest";
   ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_NULL) );
   ESP_ERROR_CHECK( esp_wifi_start() );
   esp_wifi_set_channel(6, 0);
@@ -642,8 +632,6 @@ void wifi_scanner_task(void *parameter)
   {
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     esp_event_handler_instance_t instance_any_id;
-    // unused variable
-    // esp_event_handler_instance_t instance_got_ip;
     ESP_ERROR_CHECK(esp_event_handler_instance_register(
       WIFI_EVENT,
       ESP_EVENT_ANY_ID,

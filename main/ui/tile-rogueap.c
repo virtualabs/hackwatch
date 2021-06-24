@@ -77,9 +77,6 @@ void start_btn_onclick(widget_t *p_widget)
 
 void ap_select_modal_onclick(widget_t *p_widget)
 {
-  // unused variable
-  // wifi_ap_t *ap_selected;
-
   /* Do we have a selected AP ? */
   target_ap = wifiscan_get_selected(&ap_wifiscan);
   if (target_ap != NULL)
