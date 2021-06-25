@@ -14,6 +14,15 @@ void widget_battery_drawfunc(widget_t *p_widget)
 
   if (p_battery != NULL)
   {
+    /* Read battery level each 50 iterations. */
+    if (p_battery->delay < 50)
+      p_battery->delay++;
+    else
+    {
+      p_battery->percentage = twatch_pmu_get_battery_level();
+      p_battery->delay = 0;
+    }
+
     widget_draw_line(
       p_widget,
       1, 0, BATTERY_WIDTH - 1, 0, RGB(0xe, 0xe, 0xe)
@@ -60,6 +69,8 @@ void widget_battery_init(widget_batt_t *p_battery, tile_t *p_tile, int x, int y)
 
   /* Check if we are charging. */
   p_battery->b_usb_connected = twatch_pmu_is_usb_plugged(true);
+
+  p_battery->delay = 0;
 
   /* Set user data. */
   widget_set_userdata(&p_battery->widget, (void *)p_battery);

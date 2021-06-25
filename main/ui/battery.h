@@ -10,6 +10,9 @@
 typedef struct {
   widget_t widget;
 
+  /* Update delay. */
+  int delay;
+
   /* Battery percentage. */
   int percentage;
   bool b_usb_connected;
