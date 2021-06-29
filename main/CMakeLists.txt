@@ -21,6 +21,7 @@ set(
  "ui/tile-rogueap.c"
  "ui/tile-ir-shutdown.c"
  "ui/timeset.c"
+ "ui/battery.c"
 )
 
 
