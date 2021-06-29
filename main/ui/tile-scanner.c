@@ -6,7 +6,7 @@ tile_t scanner_tile;
 
 wifiscan_t g_wifiscan;
 
-void scanner_event_handler(wifiscan_event_t event)
+void scanner_wifi_event_handler(wifiscan_event_t event)
 {
   wifi_ap_t *p_ap;
 
@@ -22,14 +22,48 @@ void scanner_event_handler(wifiscan_event_t event)
   }
 }
 
+int scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
+{
+  switch (event)
+  {
+    case TE_ENTER:
+      {
+        /* Enable scanner. */
+        wifi_set_mode(WIFI_SCANNER);
+
+        /* Disable eco mode. */
+        disable_ecomode();
+      }
+      break;
+
+    case TE_EXIT:
+      {
+        /* Stop scanner. */
+        wifi_set_mode(WIFI_OFF);
+
+        /* Re-enable eco mode. */
+        enable_ecomode();
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  /* Success. */
+  return TE_PROCESSED;
+}
+
+
 tile_t *tile_scanner_init(void)
 {
   /* Initialize our tile. */
   tile_init(&scanner_tile, NULL);
+  tile_set_event_handler(&scanner_tile, scanner_tile_event_handler);
 
   /* Add a wifiscan widget. */
   wifiscan_init(&g_wifiscan, &scanner_tile, 5, 5, 230, 230);
-  wifiscan_set_event_handler(&g_wifiscan, scanner_event_handler);
+  wifiscan_set_event_handler(&g_wifiscan, scanner_wifi_event_handler);
 
   /* Return our tile. */
   return &scanner_tile;
