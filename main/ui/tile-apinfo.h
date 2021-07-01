@@ -6,7 +6,7 @@
 #include "ui/frame.h"
 #include "../wifi/wifi.h"
 
-tile_t *tile_apinfo_init(void);
-void tile_apinfo_set_ap(wifi_ap_t *p_wifi_ap);
+modal_t *modal_apinfo_init(void);
+void modal_apinfo_set_ap(wifi_ap_t *p_wifi_ap);
 
 #endif /* __INC_HACKWATCH_APINFO_H */
