@@ -107,14 +107,14 @@ void clock_update(void *parameter)
     mins = datetime.minute;
 
     snprintf(
-      psz_date,
+      (char *)psz_date,
       14, 
       "%02d/%02d/%04d", 
       datetime.day, 
       datetime.month, 
       datetime.year
     );
-    widget_label_set_text(&date_lbl, psz_date);
+    widget_label_set_text(&date_lbl, (char *)psz_date);
 
     vTaskDelay(300/portTICK_PERIOD_MS);
   }
@@ -134,7 +134,7 @@ tile_t *tile_clock_init(void)
 
   /* Add labels */
   widget_label_init(&date_lbl, &clock_tile, (240-160)/2, 100, 160, 50, "01/01/1970");
-  widget_set_front_color(&date_lbl, BLUE);
+  widget_set_front_color((widget_t *)&date_lbl, BLUE);
 
   /* Add battery */
   widget_battery_init(&batt, &clock_tile, 191, 10);

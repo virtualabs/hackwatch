@@ -29,14 +29,12 @@ typedef enum {
  * Structures
  **/
 
-__attribute__((packed))
 typedef struct {
   uint8_t element_id;
   uint8_t length;
   void *p_data;
 } wifi_tlv_t;
 
-__attribute__((packed))
 typedef struct {
 	unsigned frame_ctrl:16;
 	unsigned duration_id:16;
