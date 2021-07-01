@@ -176,7 +176,8 @@ int clock_save_onclick(widget_t *p_widget)
 
   ui_set_modal(&confirm);
 
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 /**
@@ -190,7 +191,8 @@ int clock_save_confirm(widget_t *p_widget)
 {
   ui_unset_modal();
 
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 
@@ -217,7 +219,8 @@ int date_save_onclick(widget_t *p_widget)
   datetime.year = years;
   twatch_rtc_set_date_time(&datetime);
 
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 
@@ -243,7 +246,8 @@ int settings_invert_onclick(widget_t *p_widget)
     twatch_touch_set_inverted(true);
   }
 
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 
@@ -433,7 +437,8 @@ int backlight_onchanged(widget_t *p_widget_slider/*, int new_value, int old_valu
     twatch_screen_set_backlight(new_value);
     widget_slider_set_value((widget_slider_t *)p_widget_slider, new_value);
   }
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 /**

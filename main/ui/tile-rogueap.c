@@ -41,7 +41,9 @@ int rogueap_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y,
     default:
       break;
   }
-  return 0;
+
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 int select_btn_onclick(widget_t *p_widget)
@@ -49,7 +51,8 @@ int select_btn_onclick(widget_t *p_widget)
   /* Activate AP selection dialog box (modal). */
   ui_set_modal(&ap_select_modal);
 
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 int start_btn_onclick(widget_t *p_widget)
@@ -73,7 +76,8 @@ int start_btn_onclick(widget_t *p_widget)
     wifi_set_mode(WIFI_SCANNER);
     widget_button_set_text(&startstop_btn, "Start");
   }
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 int ap_select_modal_onclick(widget_t *p_widget)
@@ -96,7 +100,8 @@ int ap_select_modal_onclick(widget_t *p_widget)
   /* Deactivate modal. */
   ui_set_modal(NULL);
 
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 tile_t *tile_rogueap_init(void)

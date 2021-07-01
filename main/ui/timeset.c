@@ -131,7 +131,8 @@ int _timeset_drawfunc(widget_t *p_widget)
     delta_y + DIGIT_HEIGHT + 5
   );
 
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 void update_time(widget_t *p_widget, int x, int y, bool longpress)
