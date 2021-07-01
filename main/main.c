@@ -22,7 +22,7 @@ void main_ui(void *parameter)
 {
   tile_t main_tile;
   tile_t wifi_tile, settings_tile, bluetooth_tile;
-  tile_t *p_deauth_tile, *p_apinfo_tile, *p_clock_tile, *p_channels_tile;
+  tile_t *p_deauth_tile, *p_clock_tile, *p_channels_tile;
   tile_t *p_settings_one_tile, *p_settings_two_tile, *p_settings_three_tile;
   tile_t *p_rogue_tile;
   image_t *wifi, *settings, *bluetooth;
@@ -57,7 +57,6 @@ void main_ui(void *parameter)
 
 
   p_deauth_tile = tile_scanner_init();
-  p_apinfo_tile = tile_apinfo_init();
   p_clock_tile = tile_clock_init();
   p_channels_tile = tile_channels_init();
   p_settings_one_tile = tile_settings_one_init();
@@ -65,25 +64,27 @@ void main_ui(void *parameter)
   p_settings_three_tile = tile_settings_three_init();
   p_rogue_tile = tile_rogueap_init();
   
-  /* Clock screen */
-  //tile_link_right(&clock_tile, &wifi_tile);
+  /* Main circular "menu" */
   tile_link_right(p_clock_tile, &wifi_tile);
-
-  /* Wifi link */
-  tile_link_top(&wifi_tile, p_rogue_tile);
   tile_link_right(&wifi_tile, &settings_tile);
-  tile_link_bottom(&wifi_tile, p_channels_tile);
-  tile_link_bottom(p_channels_tile, p_deauth_tile);
-  tile_link_bottom(p_deauth_tile, p_apinfo_tile);
-  
-  /* Settings link */
   tile_link_right(&settings_tile, &bluetooth_tile);
-  tile_link_bottom(&settings_tile, p_settings_one_tile);
-  tile_link_bottom(p_settings_one_tile, p_settings_two_tile);
-  tile_link_bottom(p_settings_two_tile, p_settings_three_tile);
-
-  /* Bluetooth link */
   tile_link_right(&bluetooth_tile, p_clock_tile);
+
+  /* Wifi "submenu" */
+  tile_link_bottom(&wifi_tile, p_channels_tile);
+  tile_link_bottom(&wifi_tile, p_rogue_tile);
+  tile_link_bottom(&wifi_tile, p_deauth_tile);
+  tile_link_right(p_deauth_tile, p_channels_tile);
+  tile_link_right(p_channels_tile, p_rogue_tile);
+  tile_link_right(p_rogue_tile, p_deauth_tile);
+  
+  /* Settings "submenu" */
+  tile_link_bottom(&settings_tile, p_settings_three_tile);
+  tile_link_bottom(&settings_tile, p_settings_two_tile);
+  tile_link_bottom(&settings_tile, p_settings_one_tile);
+  tile_link_right(p_settings_one_tile, p_settings_two_tile);
+  tile_link_right(p_settings_two_tile, p_settings_three_tile);
+  tile_link_right(p_settings_three_tile, p_settings_one_tile);
 
   /* Select our main tile. */
   ui_select_tile(p_clock_tile);
