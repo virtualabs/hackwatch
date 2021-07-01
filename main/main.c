@@ -5,7 +5,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-
 #include "twatch.h"
 #include "ui/tile-scanner.h"
 #include "ui/tile-apinfo.h"
@@ -13,6 +12,7 @@
 #include "ui/tile-settings.h"
 #include "ui/tile-channels.h"
 #include "ui/tile-rogueap.h"
+#include "ui/tile-ir-shutdown.h"
 #include "img/wifi_icon.h"
 #include "img/settings_icon.h"
 #include "img/bluetooth_icon.h"
@@ -21,15 +21,17 @@
 void main_ui(void *parameter)
 {
   tile_t main_tile;
-  tile_t wifi_tile, settings_tile, bluetooth_tile;
+
+  tile_t wifi_tile, settings_tile, bluetooth_tile, ir_tile;
   tile_t *p_deauth_tile, *p_apinfo_tile, *p_clock_tile, *p_channels_tile;
   tile_t *p_settings_one_tile, *p_settings_two_tile, *p_settings_three_tile;
-  tile_t *p_rogue_tile;
+  tile_t *p_rogue_tile;  
+  tile_t *p_ir_shutdown_tile;  
   image_t *wifi, *settings, *bluetooth;
   
   widget_label_t label_main;
   widget_image_t wifi_img, settings_img, bluetooth_img;
-  widget_label_t wifi_lbl, settings_lbl, bluetooth_lbl;
+  widget_label_t wifi_lbl, settings_lbl, bluetooth_lbl, ir_lbl;
 
   /* Main screen */
   tile_init(&main_tile, NULL);
@@ -38,6 +40,7 @@ void main_ui(void *parameter)
   /* WiFi screen */
   tile_init(&wifi_tile, NULL);
   wifi = load_image(wifi_icon);
+
   widget_image_init(&wifi_img, &wifi_tile, 70, (240-88)/2 - 20, 100, 88, wifi);
   widget_label_init(&wifi_lbl, &wifi_tile, 90, 150, 120, 50, "WiFi");
 
@@ -55,6 +58,9 @@ void main_ui(void *parameter)
   widget_image_init(&bluetooth_img, &bluetooth_tile, 80, (240-88)/2 - 20, 88, 88, bluetooth);
   widget_label_init(&bluetooth_lbl, &bluetooth_tile, 60, 150, 120, 50, "Bluetooth");
 
+  /* IR screen */
+  tile_init(&ir_tile, NULL);
+  widget_label_init(&ir_lbl, &ir_tile, 105, 150, 120, 50, "IR");
 
   p_deauth_tile = tile_scanner_init();
   p_apinfo_tile = tile_apinfo_init();
@@ -64,6 +70,7 @@ void main_ui(void *parameter)
   p_settings_two_tile = tile_settings_two_init();
   p_settings_three_tile = tile_settings_three_init();
   p_rogue_tile = tile_rogueap_init();
+  p_ir_shutdown_tile = tile_ir_shutdown_init();
   
   /* Clock screen */
   //tile_link_right(&clock_tile, &wifi_tile);
@@ -83,7 +90,12 @@ void main_ui(void *parameter)
   tile_link_bottom(p_settings_two_tile, p_settings_three_tile);
 
   /* Bluetooth link */
-  tile_link_right(&bluetooth_tile, p_clock_tile);
+  tile_link_right(&bluetooth_tile, &ir_tile);
+
+  /* IR link */
+  tile_link_right(&ir_tile, p_clock_tile);
+  tile_link_bottom(&ir_tile, p_ir_shutdown_tile);
+
 
   /* Select our main tile. */
   ui_select_tile(p_clock_tile);

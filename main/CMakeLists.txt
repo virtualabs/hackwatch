@@ -8,6 +8,7 @@ set(
  "img/digits.c"
  "img/digits_small.c"
  "img/ticks.c"
+ "ir/tvbgone.c"
  "wifi/wifi.c"
  "wifi/wifi_aplist.c"
  "wifi/wifiscan.c"
@@ -18,8 +19,10 @@ set(
  "ui/tile-settings.c"
  "ui/tile-channels.c"
  "ui/tile-rogueap.c"
+ "ui/tile-ir-shutdown.c"
  "ui/timeset.c"
  "ui/battery.c"
 )
+
 
 register_component()
