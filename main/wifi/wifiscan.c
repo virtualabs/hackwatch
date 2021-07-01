@@ -285,6 +285,13 @@ void wifiscan_init(wifiscan_t *p_wifiscan, tile_t *p_tile, int x, int y, int wid
     height
   );
 
+  /* Set listbox border color. */
+  widget_set_border_color(&p_wifiscan->listbox.widget, RGB(0x0, 0x8, 0xc));
+  
+  /* Set listbox's scrollbar border color. */
+  widget_set_border_color(&p_wifiscan->listbox.scrollbar.widget, RGB(0x0, 0x8, 0xc));
+
+
   p_wifiscan->pfn_event_hook = widget_set_eventhandler((widget_t *)p_wifiscan, wscan_listbox_event_hook);
 
   /* Register a specific handler for scanning events. */
