@@ -112,7 +112,7 @@ tile_t *tile_rogueap_init(void)
 
   /* Add title. */
   widget_label_init(&title_lbl, &rogueap_tile, 3, 3, 200, 40, "Rogue AP");
-  widget_set_front_color((widget_t *)&title_lbl, RGB(0x0, 0x8, 0xc));
+  widget_set_front_color((widget_t *)&title_lbl, RGB(0xf,0xf,0xf));
 
   /* Add frame. */
   widget_frame_init(&ap_frame, &rogueap_tile, 2, 39, 240-2, 240-39-2);
