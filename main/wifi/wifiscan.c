@@ -76,7 +76,7 @@ int wscan_widget_listitem_event_handler(widget_t *p_widget, widget_event_t event
  * @param p_widget: pointer to a `widget_t` structure.
  **/
 
-void wscan_widget_listitem_drawfunc(widget_t *p_widget)
+int wscan_widget_listitem_drawfunc(widget_t *p_widget)
 {
   char bssid[18];
   char channel[4];
@@ -138,6 +138,7 @@ void wscan_widget_listitem_drawfunc(widget_t *p_widget)
       );
     }
   }
+  return 0; 
 }
 
 
@@ -162,7 +163,7 @@ void wscan_widget_listitem_init(wifiscan_widget_listitem_t *p_listitem, wifi_ap_
   widget_set_userdata(&p_listitem->widget, (void *)p_listitem);
 
   /* Set drawing function. */
-  widget_set_drawfunc(&p_listitem->widget, (FDrawWidget)wscan_widget_listitem_drawfunc);
+  widget_set_drawfunc(&p_listitem->widget, wscan_widget_listitem_drawfunc);
 
   /* Set default event handler. */
   widget_set_eventhandler(&p_listitem->widget, wscan_widget_listitem_event_handler);
@@ -213,7 +214,7 @@ static void wscan_aplist_update_handler(void* arg, esp_event_base_t event_base, 
       if ((list_nb_aps > p_wifiscan->nb_aps) && (p_wifiscan->nb_aps < WSCAN_MAX_APS))
       {
         p_wifiscan->aps[list_nb_aps-1].p_ap = p_ap_record;
-        widget_listbox_add(&p_wifiscan->listbox, &p_wifiscan->aps[list_nb_aps-1]);
+        widget_listbox_add(&p_wifiscan->listbox, (widget_t *)&p_wifiscan->aps[list_nb_aps-1]);
         p_wifiscan->nb_aps++;
       }
       else
@@ -230,7 +231,7 @@ static void wscan_aplist_update_handler(void* arg, esp_event_base_t event_base, 
     for (i=list_nb_aps; i<p_wifiscan->nb_aps; i++)
     {
       ESP_LOGI(TAG, "Remove item %s", p_wifiscan->aps[i].p_ap->essid);
-      widget_listbox_remove(&p_wifiscan->listbox, &p_wifiscan->aps[i]);
+      widget_listbox_remove(&p_wifiscan->listbox, (widget_t *)&p_wifiscan->aps[i]);
     }
 
     /* Update number of aps. */

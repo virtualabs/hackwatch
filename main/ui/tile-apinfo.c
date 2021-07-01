@@ -28,7 +28,7 @@ char *auth_mode[] = {
   "WAPI_PSK"
 };
 
-void deauth_toggle(struct widget_t *p_widget)
+int deauth_toggle(widget_t *p_widget)
 {
   if (!deauth_enabled)
   {
@@ -52,6 +52,7 @@ void deauth_toggle(struct widget_t *p_widget)
     /* Deauth is off. */
     deauth_enabled = false;
   }
+  return 0;
 }
 
 int apinfo_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
@@ -74,9 +75,7 @@ int apinfo_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int v
     default:
       break;
   }
-
-  /* Success. */
-  return TE_PROCESSED;
+  return 0;
 }
 
 tile_t *tile_apinfo_init(void)
@@ -97,28 +96,28 @@ tile_t *tile_apinfo_init(void)
   
   widget_label_init(&mac_lbl, &apinfo_tile, 10, 50, 230, 45, "MAC");
   widget_label_set_fontsize(&mac_lbl, LABEL_FONT_SMALL);
-  widget_set_front_color(&mac_lbl, BLUE);
+  widget_set_front_color((widget_t *)&mac_lbl, BLUE);
 
   widget_label_init(&mac_address, &apinfo_tile, 70, 50, 160, 45, "");
   widget_label_set_fontsize(&mac_address, LABEL_FONT_SMALL);
 
   widget_label_init(&channel_lbl, &apinfo_tile, 10, 70, 230, 45, "Channel");
   widget_label_set_fontsize(&channel_lbl, LABEL_FONT_SMALL);
-  widget_set_front_color(&channel_lbl, BLUE);
+  widget_set_front_color((widget_t *)&channel_lbl, BLUE);
 
   widget_label_init(&channel, &apinfo_tile, 70, 70, 160, 45, "");
   widget_label_set_fontsize(&channel, LABEL_FONT_SMALL);
 
   widget_label_init(&security_lbl, &apinfo_tile, 10, 90, 230, 45, "Security");
   widget_label_set_fontsize(&security_lbl, LABEL_FONT_SMALL);
-  widget_set_front_color(&security_lbl, BLUE);
+  widget_set_front_color((widget_t *)&security_lbl, BLUE);
 
   widget_label_init(&security, &apinfo_tile, 70, 90, 160, 45, "");
   widget_label_set_fontsize(&security, LABEL_FONT_SMALL);
 
   widget_label_init(&rssi_lbl, &apinfo_tile, 10, 110, 230, 45, "RSSI");
   widget_label_set_fontsize(&rssi_lbl, LABEL_FONT_SMALL);
-  widget_set_front_color(&rssi_lbl, BLUE);
+  widget_set_front_color((widget_t *)&rssi_lbl, BLUE);
 
 
   widget_label_init(&rssi, &apinfo_tile, 70, 110, 160, 45, "");
@@ -148,7 +147,7 @@ void tile_apinfo_set_ap(wifi_ap_t *p_wifi_ap)
 
   /* Format BSSID. */
   snprintf(
-    psz_mac,
+    (char *)psz_mac,
     18,
     "%02x:%02x:%02x:%02x:%02x:%02x",
     p_wifi_ap->bssid[0],
@@ -158,16 +157,16 @@ void tile_apinfo_set_ap(wifi_ap_t *p_wifi_ap)
     p_wifi_ap->bssid[4],
     p_wifi_ap->bssid[5]
   );
-  widget_label_set_text(&mac_address, psz_mac);
+  widget_label_set_text(&mac_address, (char *)  psz_mac);
 
   /* Format channel. */
-  itoa(p_wifi_ap->channel, psz_channel, 10);
-  widget_label_set_text(&channel, psz_channel);
+  itoa(p_wifi_ap->channel, (char *)psz_channel, 10);
+  widget_label_set_text(&channel, (char *)psz_channel);
 
   /* Display auth mode. */
   widget_label_set_text(&security, auth_mode[p_wifi_ap->auth_mode]);
 
   /* Format RSSI. */
-  itoa(p_wifi_ap->rssi, psz_rssi, 10);
-  widget_label_set_text(&rssi, psz_rssi);
+  itoa(p_wifi_ap->rssi, (char *)psz_rssi, 10);
+  widget_label_set_text(&rssi, (char *)psz_rssi);
 }

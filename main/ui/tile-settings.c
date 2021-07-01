@@ -7,7 +7,6 @@ static modal_t confirm;
 static widget_button_t confirm_btn;
 static widget_label_t confirm_txt;
 
-static widget_value_select_t hours_select, mins_select, lbl_clock;
 static widget_value_select_t days_select, months_select, years_select;
 static rtc_datetime_t datetime;
 static widget_label_t lbl_one_title, lbl_two_title, lbl_three_title;
@@ -169,13 +168,15 @@ void widget_value_select_set_value(widget_value_select_t *p_value_select, int va
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void clock_save_onclick(widget_t *p_widget)
+int clock_save_onclick(widget_t *p_widget)
 {
   twatch_rtc_get_date_time(&datetime);
   timeset_get_time(&timeset, &datetime);
   twatch_rtc_set_date_time(&datetime);
 
   ui_set_modal(&confirm);
+
+  return 0;
 }
 
 /**
@@ -185,9 +186,11 @@ void clock_save_onclick(widget_t *p_widget)
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void clock_save_confirm(widget_t *p_widget)
+int clock_save_confirm(widget_t *p_widget)
 {
   ui_unset_modal();
+
+  return 0;
 }
 
 
@@ -198,7 +201,7 @@ void clock_save_confirm(widget_t *p_widget)
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void date_save_onclick(widget_t *p_widget)
+int date_save_onclick(widget_t *p_widget)
 {
   int days,months,years;
 
@@ -213,6 +216,8 @@ void date_save_onclick(widget_t *p_widget)
   datetime.month = months;
   datetime.year = years;
   twatch_rtc_set_date_time(&datetime);
+
+  return 0;
 }
 
 
@@ -223,7 +228,7 @@ void date_save_onclick(widget_t *p_widget)
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void settings_invert_onclick(widget_t *p_widget)
+int settings_invert_onclick(widget_t *p_widget)
 {
   if (twatch_screen_is_inverted())
   {
@@ -237,6 +242,8 @@ void settings_invert_onclick(widget_t *p_widget)
     twatch_screen_set_inverted(true);
     twatch_touch_set_inverted(true);
   }
+
+  return 0;
 }
 
 
@@ -416,16 +423,17 @@ tile_t *tile_settings_two_init(void)
   return &settings_two_tile;
 }
 
-void backlight_onchanged(widget_slider_t *p_widget_slider/*, int new_value, int old_value*/)
+int backlight_onchanged(widget_t *p_widget_slider/*, int new_value, int old_value*/)
 {
-  int new_value = widget_slider_get_value(p_widget_slider);
+  int new_value = widget_slider_get_value((widget_slider_t *)p_widget_slider);
   int before = twatch_screen_get_backlight();
 
   if (before != new_value) {
     twatch_screen_set_default_backlight(new_value);
     twatch_screen_set_backlight(new_value);
-    widget_slider_set_value(p_widget_slider, new_value);
+    widget_slider_set_value((widget_slider_t *)p_widget_slider, new_value);
   }
+  return 0;
 }
 
 /**

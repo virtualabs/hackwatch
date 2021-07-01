@@ -28,7 +28,6 @@ void main_ui(void *parameter)
   image_t *wifi, *settings, *bluetooth;
   
   widget_label_t label_main;
-  widget_label_t label_wifi;
   widget_image_t wifi_img, settings_img, bluetooth_img;
   widget_label_t wifi_lbl, settings_lbl, bluetooth_lbl;
 
@@ -101,8 +100,6 @@ void main_ui(void *parameter)
 
 void app_main(void)
 {
-  esp_err_t ret;
-
   esp_log_level_set("*", ESP_LOG_WARN);
 
   ui_init();

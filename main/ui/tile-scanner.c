@@ -2,6 +2,7 @@
 
 tile_t scanner_tile;
 
+#undef TAG
 #define TAG "[tile::wifi::scanner]"
 
 wifiscan_t g_wifiscan;
