@@ -8,7 +8,7 @@
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-int widget_battery_drawfunc(widget_t *p_widget)
+void widget_battery_drawfunc(widget_t *p_widget)
 {
   widget_batt_t *p_battery = (widget_batt_t *)p_widget->p_user_data;
 
@@ -56,7 +56,6 @@ int widget_battery_drawfunc(widget_t *p_widget)
       twatch_pmu_is_usb_plugged(false)?RGB(0x0, 0x8, 0xc):RGB(0xe,0xe,0xe)
     );
   }
-  return 0;
 }
 
 
@@ -77,5 +76,5 @@ void widget_battery_init(widget_batt_t *p_battery, tile_t *p_tile, int x, int y)
   widget_set_userdata(&p_battery->widget, (void *)p_battery);
 
   /* Define our drawing function. */
-  widget_set_drawfunc(&p_battery->widget, (FDrawWidget)widget_battery_drawfunc);
+  widget_set_drawfunc(&p_battery->widget, widget_battery_drawfunc);
 }

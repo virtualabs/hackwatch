@@ -76,7 +76,7 @@ int wscan_widget_listitem_event_handler(widget_t *p_widget, widget_event_t event
  * @param p_widget: pointer to a `widget_t` structure.
  **/
 
-int wscan_widget_listitem_drawfunc(widget_t *p_widget)
+void wscan_widget_listitem_drawfunc(widget_t *p_widget)
 {
   char bssid[18];
   char channel[4];
@@ -138,8 +138,6 @@ int wscan_widget_listitem_drawfunc(widget_t *p_widget)
       );
     }
   }
-  /* Success. */
-  return TE_PROCESSED;
 }
 
 
