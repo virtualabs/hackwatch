@@ -12,7 +12,7 @@ To install esp-idf framework, follow the procedure avaiable here:
 Clone the hackwatch project from github:
 
     cd ~/esp/    
-    git clone --recurse-submodules https://github.com/hackwatch
+    git clone --recurse-submodules https://github.com/virtualabs/hackwatch 
 
 ## Compile
 
