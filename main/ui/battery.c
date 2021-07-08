@@ -25,11 +25,11 @@ int widget_battery_drawfunc(widget_t *p_widget)
 
     widget_draw_line(
       p_widget,
-      1, 0, BATTERY_WIDTH - 1, 0, RGB(0xe, 0xe, 0xe)
+      1, 0, BATTERY_WIDTH, 0, RGB(0xe, 0xe, 0xe)
     );
     widget_draw_line(
       p_widget,
-      1, BATTERY_HEIGHT-1, BATTERY_WIDTH - 1, BATTERY_HEIGHT-1, RGB(0xe, 0xe, 0xe)
+      1, BATTERY_HEIGHT-1, BATTERY_WIDTH, BATTERY_HEIGHT-1, RGB(0xe, 0xe, 0xe)
     );
     widget_draw_line(
       p_widget,
@@ -59,6 +59,17 @@ int widget_battery_drawfunc(widget_t *p_widget)
   return 0;
 }
 
+
+
+/**
+ * widget_battery_init()
+ *
+ * @brief: Initialize a battery widget
+ * @param p_battery: pointer to a `widget_batt_t` structure
+ * @param p_tile: pointer to a `tile_t` structure
+ * @param x: widget X coordinate
+ * @param y: widget Y coordinate
+ **/
 
 void widget_battery_init(widget_batt_t *p_battery, tile_t *p_tile, int x, int y)
 {
