@@ -14,6 +14,14 @@ static image_t *p_font;
 static image_t *p_ticks;
 
 
+/**
+ * _timeset_drawfunc()
+ * 
+ * @brief: Timeset widget drawing function
+ * @param p_widget: pointer to a `widget_t` structure
+ * @return TE_PROCESSED if success.
+ **/
+
 int _timeset_drawfunc(widget_t *p_widget)
 {
   int delta_x, delta_y;
@@ -135,6 +143,18 @@ int _timeset_drawfunc(widget_t *p_widget)
   return TE_PROCESSED;
 }
 
+
+/**
+ * update_time()
+ * 
+ * @brief: Time update routine
+ * @param p_widget: pointer to a `widget_t` structure
+ * @param x: X coordinate of a press event
+ * @param y: Y coordinate of a press event
+ * @param longpress: true if event is a longpress, false otherwise
+ * @return TE_PROCESSED if success.
+ **/
+
 void update_time(widget_t *p_widget, int x, int y, bool longpress)
 {
   widget_timeset_t *p_timeset = (widget_timeset_t *)p_widget->p_user_data;  
@@ -171,12 +191,25 @@ void update_time(widget_t *p_widget, int x, int y, bool longpress)
   }
 }
 
-int _timeset_eventhandler(widget_t *p_widget, widget_event_t p_event, int x, int y, int velocity)
+
+/**
+ * _timeset_eventhandler()
+ * 
+ * @brief: Timeset widget event handler
+ * @param p_widget: pointer to a `widget_t` structure
+ * @param event: event type
+ * @param x: X coordinate of a press event
+ * @param y: Y coordinate of a press event
+ * @param velocity: speed of a swipe event
+ * @return WE_PROCESSED if success.
+ **/
+
+int _timeset_eventhandler(widget_t *p_widget, widget_event_t event, int x, int y, int velocity)
 {
   bool b_event_processed = false;
   widget_timeset_t *p_timeset = (widget_timeset_t *)p_widget->p_user_data;  
 
-  switch(p_event)
+  switch(event)
   {
     case WE_PRESS:
       {
@@ -228,6 +261,14 @@ int _timeset_eventhandler(widget_t *p_widget, widget_event_t p_event, int x, int
 }
 
 
+/**
+ * timeset_set_time()
+ * 
+ * @brief: Set timeset widget time
+ * @param p_timeset: pointer to a `widget_timeset_t` structure
+ * @param p_datetime: pointer to a `rtc_datetime_t` structure
+ **/
+
 void timeset_set_time(widget_timeset_t *p_timeset, rtc_datetime_t *p_datetime)
 {
   /* Set hours and minutes. */
@@ -235,12 +276,34 @@ void timeset_set_time(widget_timeset_t *p_timeset, rtc_datetime_t *p_datetime)
   p_timeset->minutes = p_datetime->minute;
 }
 
+
+/**
+ * timeset_get_time()
+ * 
+ * @brief: Set timeset widget time
+ * @param p_timeset: pointer to a `widget_timeset_t` structure
+ * @param p_datetime: pointer to a `rtc_datetime_t` structure
+ **/
+
 void timeset_get_time(widget_timeset_t *p_timeset, rtc_datetime_t *p_datetime)
 {
   /* Copy hours and minutes into p_datetime. */
   p_datetime->hour = p_timeset->hours;
   p_datetime->minute = p_timeset->minutes;
 }
+
+
+/**
+ * timeset_init()
+ * 
+ * @brief: Initialize a timeset widget
+ * @param p_timeset: pointer to a `widget_timeset_t` structure
+ * @param p_tile: pointer to a `tile_t` structure
+ * @param x: X coordinate of the widget
+ * @param y: Y coordinate of the widget
+ * @param hours: current number of hours
+ * @param minutes: current number of minutes
+ **/
 
 void timeset_init(widget_timeset_t *p_timeset, tile_t *p_tile, int x, int y, int hours, int minutes)
 {
