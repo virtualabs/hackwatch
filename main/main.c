@@ -15,21 +15,21 @@
 #include "ui/tile-rogueap.h"
 #include "img/wifi_icon.h"
 #include "img/settings_icon.h"
-#include "img/bluetooth_icon.h"
+/* #include "img/bluetooth_icon.h" */
 
 
 void main_ui(void *parameter)
 {
   tile_t main_tile;
-  tile_t wifi_tile, settings_tile, bluetooth_tile;
-  tile_t *p_deauth_tile, *p_clock_tile, *p_channels_tile;
+  tile_t wifi_tile, settings_tile /*, bluetooth_tile*/;
+  tile_t *p_scanner_tile, *p_clock_tile, *p_channels_tile;
   tile_t *p_settings_one_tile, *p_settings_two_tile, *p_settings_three_tile;
   tile_t *p_rogue_tile;
   image_t *wifi, *settings, *bluetooth;
   
   widget_label_t label_main;
-  widget_image_t wifi_img, settings_img, bluetooth_img;
-  widget_label_t wifi_lbl, settings_lbl, bluetooth_lbl;
+  widget_image_t wifi_img, settings_img /*, bluetooth_img*/;
+  widget_label_t wifi_lbl, settings_lbl /*, bluetooth_lbl*/;
 
   /* Main screen */
   tile_init(&main_tile, NULL);
@@ -41,8 +41,6 @@ void main_ui(void *parameter)
   widget_image_init(&wifi_img, &wifi_tile, 70, (240-88)/2 - 20, 100, 88, wifi);
   widget_label_init(&wifi_lbl, &wifi_tile, 90, 150, 120, 50, "WiFi");
 
-  //widget_label_init(&label_wifi, &wifi_tile, 80, 110, 220, 45, "WiFi tile");
-
   /* Settings screen */
   tile_init(&settings_tile, NULL);
   settings = load_image(settings_icon);
@@ -50,13 +48,15 @@ void main_ui(void *parameter)
   widget_label_init(&settings_lbl, &settings_tile, 70, 150, 120, 50, "Settings");
 
   /* Bluetooth screen */
-  tile_init(&bluetooth_tile, NULL);
-  bluetooth = load_image(bluetooth_icon);
-  widget_image_init(&bluetooth_img, &bluetooth_tile, 80, (240-88)/2 - 20, 88, 88, bluetooth);
-  widget_label_init(&bluetooth_lbl, &bluetooth_tile, 60, 150, 120, 50, "Bluetooth");
 
+  /* For the next release. 
+    tile_init(&bluetooth_tile, NULL);
+    bluetooth = load_image(bluetooth_icon);
+    widget_image_init(&bluetooth_img, &bluetooth_tile, 80, (240-88)/2 - 20, 88, 88, bluetooth);
+    widget_label_init(&bluetooth_lbl, &bluetooth_tile, 60, 150, 120, 50, "Bluetooth");
+  */
 
-  p_deauth_tile = tile_scanner_init();
+  p_scanner_tile = tile_scanner_init();
   p_clock_tile = tile_clock_init();
   p_channels_tile = tile_channels_init();
   p_settings_one_tile = tile_settings_one_init();
@@ -67,16 +67,20 @@ void main_ui(void *parameter)
   /* Main circular "menu" */
   tile_link_right(p_clock_tile, &wifi_tile);
   tile_link_right(&wifi_tile, &settings_tile);
+  tile_link_right(&settings_tile, p_clock_tile);
+
+  /* With bluetooth menu, for next release
   tile_link_right(&settings_tile, &bluetooth_tile);
   tile_link_right(&bluetooth_tile, p_clock_tile);
+  */
 
   /* Wifi "submenu" */
   tile_link_bottom(&wifi_tile, p_channels_tile);
   tile_link_bottom(&wifi_tile, p_rogue_tile);
-  tile_link_bottom(&wifi_tile, p_deauth_tile);
-  tile_link_right(p_deauth_tile, p_channels_tile);
+  tile_link_bottom(&wifi_tile, p_scanner_tile);
+  tile_link_right(p_scanner_tile, p_channels_tile);
   tile_link_right(p_channels_tile, p_rogue_tile);
-  tile_link_right(p_rogue_tile, p_deauth_tile);
+  tile_link_right(p_rogue_tile, p_scanner_tile);
   
   /* Settings "submenu" */
   tile_link_bottom(&settings_tile, p_settings_three_tile);
@@ -99,10 +103,15 @@ void main_ui(void *parameter)
   }
 }
 
+/**
+ * HackWatch main application routine.
+ **/
+
 void app_main(void)
 {
   esp_log_level_set("*", ESP_LOG_WARN);
 
+  /* Initialize UI. */
   ui_init();
 
   /* Check power management. */
@@ -115,22 +124,14 @@ void app_main(void)
     printf("[pmu] PMU is not detected\r\n");
   }
 
+  /* Initialize our twatch-lib. */
   twatch_vibrate_init();
   twatch_screen_init();
   twatch_rtc_init();
-  /*
-  datetime.year = 2021;
-  datetime.month=4;
-  datetime.day=16;
-  datetime.hour=1;
-  datetime.minute=00;
-  datetime.second=0;
-  twatch_rtc_set_date_time(&datetime);
-  */
-
+  
   /* Initialize WiFi controller. */
   wifi_ctrl_init();
-  //wifi_set_mode(WIFI_SCANNER);
-
+  
+  /* Start UI in a dedicated task. */
   xTaskCreate(main_ui, "main_ui", 10000, NULL, 1, NULL);
 }
