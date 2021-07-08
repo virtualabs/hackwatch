@@ -7,6 +7,7 @@
 #include "ui/frame.h"
 #include "ui/slider.h"
 #include "timeset.h"
+#include "dateset.h"
 
 typedef struct {
   widget_label_t label;

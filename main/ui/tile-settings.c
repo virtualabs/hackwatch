@@ -7,13 +7,12 @@ static modal_t confirm;
 static widget_button_t confirm_btn;
 static widget_label_t confirm_txt;
 
-static widget_value_select_t days_select, months_select, years_select;
 static rtc_datetime_t datetime;
 static widget_label_t lbl_one_title, lbl_two_title, lbl_three_title;
-static widget_label_t lbl_month, lbl_year;
 static widget_button_t btn_orientation;
 static widget_button_t btn_save_clock, btn_save_date;
 static widget_timeset_t timeset;
+static widget_dateset_t dateset;
 static widget_slider_t sld_backlight;
 
 /**
@@ -37,131 +36,6 @@ int _constrain(int min, int max, int value)
 
 
 /**
- * widget_value_select_update_value()
- * 
- * @brief: Update the value of a widget_value_select_t widget.
- * @param p_value_select: pointer to a `widget_value_select_t` structure
- **/
-
-void widget_value_select_update_value(widget_value_select_t *p_value_select)
-{
-  /* Set label text. */
-  snprintf(p_value_select->psz_label_text, 3, "%02d", p_value_select->current_value);
-  widget_label_set_text(
-    &p_value_select->label,
-    p_value_select->psz_label_text
-  );
-}
-
-
-/**
- * widget_value_select_eventhandler()
- * 
- * @brief: Select widget event handler.
- * @param p_widget: pointer to a `widget_t` structure
- * @param p_event: event
- * @param x: X-coordinate for the event
- * @param y: Y-coordinate for the event
- * @param velocity: swipe speed (in case of a swipe event)
- **/
-
-int widget_value_select_eventhandler(widget_t *p_widget, widget_event_t p_event, int x, int y, int velocity)
-{
-  widget_value_select_t *p_value_select = (widget_value_select_t *)p_widget;
-
-  switch(p_event)
-  {
-    case WE_SWIPE_UP:
-      p_value_select->current_value = _constrain(p_value_select->min_value, p_value_select->max_value, p_value_select->current_value + 1);
-      widget_value_select_update_value(p_value_select);
-      return WE_PROCESSED;
-      
-    case WE_SWIPE_DOWN:
-      p_value_select->current_value = _constrain(p_value_select->min_value, p_value_select->max_value, p_value_select->current_value - 1);
-      widget_value_select_update_value(p_value_select);
-      return WE_PROCESSED;
-
-    default:
-      return WE_ERROR;
-  }
-}
-
-/**
- * widget_value_select_init()
- * 
- * @brief: initialize a widget_value_select widget
- * @param p_tile: pointer to parent tile
- * @param x: X position of the widget
- * @param y: Y position of the widget
- * @param width: widget width
- * @param height: widget height
- * @param min_value: selection min value
- * @param max_value: selection max value
- * @param current_value: selection current value
- **/
-
-void widget_value_select_init(
-  widget_value_select_t *p_value_select,
-  tile_t *p_tile,
-  int x,
-  int y,
-  int width,
-  int height,
-  int min_value,
-  int max_value,
-  int current_value
-)
-{
-  /* Initialize our label. */
-  widget_label_init(&p_value_select->label, p_tile, x, y, width, height, "");
-  widget_set_bg_color(&p_value_select->label.widget, RGB(0x3,0x3,0x3));
-  widget_set_front_color(&p_value_select->label.widget, RGB(0x5,0x9,0xf));
-  widget_set_eventhandler(&p_value_select->label.widget, widget_value_select_eventhandler);
-
-  /* Set min value. */
-  p_value_select->min_value = _constrain(0, 99, min_value);
-
-  /* Set max value. */
-  p_value_select->max_value = _constrain(p_value_select->min_value, 99, max_value);
-
-  /* Set current value. */
-  p_value_select->current_value = _constrain(p_value_select->min_value, p_value_select->max_value, current_value);
-
-  /* Set label text. */
-  widget_value_select_update_value(p_value_select);
-}
-
-
-/**
- * widget_value_select_get_value()
- * 
- * @brief: Retrieve the current value of a select value widget
- * @param p_value_select: pointer to a `widget_value_select_t` structure
- * @return current value
- **/
-
-int widget_value_select_get_value(widget_value_select_t *p_value_select)
-{
-  return p_value_select->current_value;
-}
-
-
-/**
- * widget_value_select_set_value()
- * 
- * @brief: Set the current value of a select value widget
- * @param p_value_select: pointer to a `widget_value_select_t` structure
- * @param value: value to set
- **/
-
-void widget_value_select_set_value(widget_value_select_t *p_value_select, int value)
-{
-  p_value_select->current_value = value;
-  widget_value_select_update_value(p_value_select);
-}
-
-
-/**
  * clock_save_onclick()
  * 
  * @brief: time save button callback handler
@@ -179,6 +53,7 @@ int clock_save_onclick(widget_t *p_widget)
   /* Success. */
   return TE_PROCESSED;
 }
+
 
 /**
  * clock_save_confirm()
@@ -205,18 +80,9 @@ int clock_save_confirm(widget_t *p_widget)
 
 int date_save_onclick(widget_t *p_widget)
 {
-  int days,months,years;
-
-  /* Read days and months. */
-  days = widget_value_select_get_value(&days_select);
-  months = widget_value_select_get_value(&months_select);
-  years = widget_value_select_get_value(&years_select);
-
   /* Set datetime. */
   twatch_rtc_get_date_time(&datetime);
-  datetime.day = days;
-  datetime.month = months;
-  datetime.year = years;
+  dateset_get_date(&dateset, &datetime);
   twatch_rtc_set_date_time(&datetime);
 
   /* Success. */
@@ -307,12 +173,7 @@ int settings_two_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, i
       {
         /* Get date and time. */
         twatch_rtc_get_date_time(&datetime);
-        uint8_t year = datetime.year%100;
-
-        /* Update date. */
-        widget_value_select_set_value(&days_select, datetime.day);
-        widget_value_select_set_value(&months_select, datetime.month);
-        widget_value_select_set_value(&years_select, year);
+        dateset_set_date(&dateset, &datetime);
       }
       break;
   
@@ -323,6 +184,7 @@ int settings_two_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, i
   /* Success. */
   return TE_PROCESSED;
 }
+
 
 /**
  * tile_settings_one_init()
@@ -397,7 +259,6 @@ tile_t *tile_settings_two_init(void)
 {
   /* Get date and time. */
   twatch_rtc_get_date_time(&datetime);
-  uint8_t year = datetime.year%100;
 
   /* Initialize our tile. */
   tile_init(&settings_two_tile, NULL);
@@ -406,16 +267,7 @@ tile_t *tile_settings_two_init(void)
   /* Initialize our title label. */
   widget_label_init(&lbl_two_title, &settings_two_tile, 10, 5, 230, 45, "Settings 2/3");
 
-    /* Initialize our day selection widget. */
-  widget_value_select_init(&days_select, &settings_two_tile, 10, 90, 40, 40, 1, 31, datetime.day);
-
-  /* Initialize our month selection widget. */
-  widget_label_init(&lbl_month, &settings_two_tile, 55, 90, 20, 45, "/");
-  widget_value_select_init(&months_select, &settings_two_tile, 80, 90, 40, 40, 0, 12, datetime.month);
-
-  /* Initialize our year selection widget. */
-  widget_label_init(&lbl_year, &settings_two_tile, 125, 90, 80, 45, "/ 20");
-  widget_value_select_init(&years_select, &settings_two_tile, 190, 90, 40, 40, 21, 99, year);
+  dateset_init(&dateset, &settings_two_tile, 0, 50, datetime.day, datetime.month, datetime.year);
   
   /* Initialize our buttons. */
   widget_button_init(&btn_save_date, &settings_two_tile, 15, 190, 210, 45, "Save date");
@@ -427,19 +279,30 @@ tile_t *tile_settings_two_init(void)
   return &settings_two_tile;
 }
 
-int backlight_onchanged(widget_t *p_widget_slider/*, int new_value, int old_value*/)
+/**
+ * backlight_onchanged()
+ * 
+ * @brief: Callback for backlight value changed
+ * @param p_widget_slider: pointer to a `widget_t` structure
+ * @return TE_PROCESSED if event has been processed.
+ **/
+
+int backlight_onchanged(widget_t *p_widget_slider)
 {
   int new_value = widget_slider_get_value((widget_slider_t *)p_widget_slider);
   int before = twatch_screen_get_backlight();
 
+  /* Update value if it has changed. */
   if (before != new_value) {
     twatch_screen_set_default_backlight(new_value);
     twatch_screen_set_backlight(new_value);
     widget_slider_set_value((widget_slider_t *)p_widget_slider, new_value);
   }
+
   /* Success. */
   return TE_PROCESSED;
 }
+
 
 /**
  * tile_settings_three_init()
