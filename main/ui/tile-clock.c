@@ -1,5 +1,6 @@
 #include "tile-clock.h"
 #include "../img/digits.h"
+#include "../img/ir_small.h"
 
 #define HOURS_X       15
 #define HOURS_Y       10
@@ -15,6 +16,7 @@
 
 static tile_t clock_tile;
 static image_t *clock_digits;
+static image_t *ir_tvbgone;
 static widget_label_t date_lbl;
 static widget_batt_t batt;
 rtc_datetime_t datetime;
@@ -90,6 +92,21 @@ int _tile_clock_draw(tile_t *p_tile)
     MINS_Y
   );
 
+  /* If TV-B-Gone is running, show a small icon. */
+  if (tvbgone_is_enabled())
+  {
+    tile_bitblt(
+      p_tile,
+      ir_tvbgone,
+      0,
+      0,
+      23,
+      18,
+      191-28,
+      10
+    );
+  }
+  
   /* Draw widgets. */
   tile_draw_widgets(p_tile);
 
@@ -128,6 +145,9 @@ tile_t *tile_clock_init(void)
 
   /* Load digits into memory. */
   clock_digits = load_image(digits_img);
+
+  /* Load IR TV-B-Gone icon. */
+  ir_tvbgone = load_image(ir_icon_small);
 
   /* Initialize our tile. */
   tile_init(&clock_tile, NULL);

@@ -5,6 +5,7 @@
 #include "ui/ui.h"
 #include "ui/frame.h"
 #include "battery.h"
+#include "tile-tvbgone.h"
 
 tile_t *tile_clock_init(void);
 
