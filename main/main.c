@@ -7,6 +7,7 @@
 
 
 #include "twatch.h"
+#include "hal/hal.h"
 #include "ui/tile-scanner.h"
 #include "ui/tile-apinfo.h"
 #include "ui/tile-clock.h"
@@ -126,23 +127,10 @@ void app_main(void)
 {
   esp_log_level_set("*", ESP_LOG_WARN);
 
-  /* Initialize UI. */
+  /* Init HAL. */
+  twatch_hal_init();
+  
   ui_init();
-
-  /* Check power management. */
-  if (twatch_pmu_init() == ESP_OK)
-  {
-    printf("[pmu] PMU is detected\r\n");
-  }
-  else
-  {
-    printf("[pmu] PMU is not detected\r\n");
-  }
-
-  /* Initialize our twatch-lib. */
-  twatch_vibrate_init();
-  twatch_screen_init();
-  twatch_rtc_init();
   
   /* Initialize WiFi controller. */
   wifi_ctrl_init();
