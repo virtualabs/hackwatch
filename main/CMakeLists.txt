@@ -5,23 +5,46 @@ set(COMPONENT_PRIV_REQUIRES )
 set(
  COMPONENT_SRCS 
  "main.c"
+ "menu.c"
  "img/digits.c"
  "img/digits_small.c"
  "img/ticks.c"
- "wifi/wifi.c"
- "wifi/wifi_aplist.c"
- "wifi/wifiscan.c"
- "wifi/dissect.c"
- "ui/tile-scanner.c"
- "ui/tile-apinfo.c"
  "ui/tile-clock.c"
  "ui/tile-settings.c"
- "ui/tile-channels.c"
- "ui/tile-rogueap.c"
- "ui/tile-tvbgone.c"
  "ui/timeset.c"
  "ui/dateset.c"
  "ui/battery.c"
 )
+
+if (CONFIG_INCLUDE_IR)
+  list(APPEND COMPONENT_SRCS
+    "ui/tile-tvbgone.c"
+  )
+endif()
+
+if (CONFIG_INCLUDE_WIFI)
+  list(APPEND COMPONENT_SRCS
+    "wifi/wifi.c"
+    "wifi/wifi_aplist.c"
+    "wifi/wifiscan.c"
+    "wifi/dissect.c"
+  )
+
+  if (CONFIG_WIFI_SCANNER)
+    list( APPEND COMPONENT_SRCS
+    "ui/tile-scanner.c"
+    "ui/tile-apinfo.c"
+    )
+  endif()
+
+  if (CONFIG_WIFI_CHANNELS)
+    list( APPEND COMPONENT_SRCS "ui/tile-channels.c")
+  endif()
+
+  if (CONFIG_WIFI_ROGUEAP)
+    list( APPEND COMPONENT_SRCS "ui/tile-rogueap.c")
+  endif()
+endif()
+
 
 register_component()

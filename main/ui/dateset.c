@@ -118,13 +118,11 @@ void dateset_fix(widget_dateset_t *p_dateset)
 
 int _dateset_drawfunc(widget_t *p_widget)
 {
-  int delta_x, delta_y;
+  int delta_y;
 
   widget_dateset_t *p_dateset = (widget_dateset_t *)p_widget->p_user_data;
 
-  delta_x = (p_widget->box.width - 6*DIGIT_WIDTH - 8)/2;
   delta_y = (p_widget->box.height - 45)/2;
-
 
   /* Draw day digit 1. */
   widget_bitblt(

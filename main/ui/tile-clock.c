@@ -16,7 +16,9 @@
 
 static tile_t clock_tile;
 static image_t *clock_digits;
-static image_t *ir_tvbgone;
+#ifdef CONFIG_INCLUDE_IR
+  static image_t *ir_tvbgone;
+#endif
 static widget_label_t date_lbl;
 static widget_batt_t batt;
 rtc_datetime_t datetime;
@@ -92,6 +94,7 @@ int _tile_clock_draw(tile_t *p_tile)
     MINS_Y
   );
 
+  #ifdef CONFIG_INCLUDE_IR
   /* If TV-B-Gone is running, show a small icon. */
   if (tvbgone_is_enabled())
   {
@@ -106,6 +109,7 @@ int _tile_clock_draw(tile_t *p_tile)
       10
     );
   }
+  #endif /* CONFIG_INCLUDE_IR */
   
   /* Draw widgets. */
   tile_draw_widgets(p_tile);
@@ -146,8 +150,10 @@ tile_t *tile_clock_init(void)
   /* Load digits into memory. */
   clock_digits = load_image(digits_img);
 
-  /* Load IR TV-B-Gone icon. */
-  ir_tvbgone = load_image(ir_icon_small);
+  #ifdef CONFIG_INCLUDE_IR
+    /* Load IR TV-B-Gone icon. */
+    ir_tvbgone = load_image(ir_icon_small);
+  #endif /* CONFIG_INCLUDE_IR */
 
   /* Initialize our tile. */
   tile_init(&clock_tile, NULL);
