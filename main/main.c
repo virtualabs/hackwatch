@@ -126,7 +126,7 @@ void main_ui(void *parameter)
 
     #ifdef CONFIG_WIFI_SCANNER
       p_sub_current = menu_add_tile(&wifi_tile, p_sub_current, tile_scanner_init);
-      if (p_tile_first == NULL)
+      if (p_sub_first == NULL)
         p_sub_first = p_sub_current;
     #endif
 
