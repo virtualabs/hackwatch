@@ -1,6 +1,6 @@
 # Edit following two lines to set component requirements (see docs)
 set(COMPONENT_REQUIRES twatch-lib)
-set(COMPONENT_PRIV_REQUIRES )
+set(COMPONENT_PRIV_REQUIRES nvs_flash bt)
 
 set(
  COMPONENT_SRCS 
@@ -20,6 +20,15 @@ if (CONFIG_INCLUDE_IR)
   list(APPEND COMPONENT_SRCS
     "ui/tile-tvbgone.c"
   )
+endif()
+
+if (CONFIG_INCLUDE_BLE)
+    list(APPEND COMPONENT_SRCS
+        "ble/ble.c"
+        "ble/ble_hack.c"
+        "ui/tile-blescan.c"
+        "ui/tile-bleinfo.c"
+    )
 endif()
 
 if (CONFIG_INCLUDE_WIFI)

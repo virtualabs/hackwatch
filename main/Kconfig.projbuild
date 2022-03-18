@@ -18,6 +18,15 @@ menu "HackWatch"
     bool "Rogue AP generator"
     default y
 
+  config INCLUDE_BLE
+    bool "Include Bluetooth Low Energy tools"
+    default y
+
+  config BLE_SCANNER
+    depends on INCLUDE_BLE
+    bool "Bluetooth Low Energy scanner"
+    default y
+
   config INCLUDE_IR
     bool "Infrared tools"
     default y
