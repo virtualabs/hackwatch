@@ -26,6 +26,8 @@ if (CONFIG_INCLUDE_BLE)
     list(APPEND COMPONENT_SRCS
         "ble/ble.c"
         "ble/ble_hack.c"
+        "img/ble_icons.c"
+        "img/ble_icons_big.c"
         "ui/tile-blescan.c"
         "ui/tile-bleinfo.c"
     )
