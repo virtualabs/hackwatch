@@ -10,7 +10,7 @@
 #include "esp_system.h"
 
 /* Enable this if you want more verbose messages. */
-#define BLE_HACK_DEBUG        0
+//#define BLE_HACK_DEBUG        0
 
 #define LLC_LLCP_SEND_ADDR        (0x40043ed4)
 #define LLC_LLCP_TESTER_SEND_ADDR (0x400445e4)

@@ -1,9 +1,18 @@
 #include "tile-blescan.h"
 
-#define BLESCAN_LISTITEM_HEIGHT 45
+#include "../img/ble_icons.h"
+#include "../img/ble_icons_big.h"
+
+#define BLESCAN_LISTITEM_HEIGHT 35
+#define BLESCAN_LISTITEM_OFFY   5  
+#undef TAG
+#define TAG "[tile::ble::scanner]"
+
+/*******************************************
+ * Globals
+ ******************************************/
 
 tile_t blescan_tile;
-
 blescan_widget_listitem_t g_devices_names[10];
 char names[10][BLE_DEVICE_NAME_MAXSIZE];
 widget_label_t lbl_scanner;
@@ -11,9 +20,8 @@ widget_listbox_t lb_devices;
 volatile int g_devices_nb;
 FEventHandler pfn_lb_event_handler;
 modal_t *p_bleinfo_modal;
+image_t *icons, *icons_big;
 
-#undef TAG
-#define TAG "[tile::ble::scanner]"
 
 /*******************************************
  * BleDevice list item widget
@@ -86,39 +94,119 @@ int blescan_widget_listitem_drawfunc(widget_t *p_widget)
   {
     if (p_listitem->p_device != NULL)
     {
-      //ble_enter_critical_section();
-
       /* Draw background. */
       widget_fill_region(
         p_widget,
         1,
-        1,
+        1 + BLESCAN_LISTITEM_OFFY,
         p_widget->box.width - 2,
         p_widget->box.height - 2,
-        (p_listitem->b_selected)?p_widget->style.front:p_widget->style.background
+        p_widget->style.background
       );
 
       /* Draw BD address. */
-      snprintf(
-        bdaddr,
-        18,
-        "%02X:%02X:%02X:%02X:%02X:%02X",
-        p_listitem->p_device->address.val[5],
-        p_listitem->p_device->address.val[4],
-        p_listitem->p_device->address.val[3],
-        p_listitem->p_device->address.val[2],
-        p_listitem->p_device->address.val[1],
-        p_listitem->p_device->address.val[0]
-      );
-      widget_draw_text(
-        p_widget,
-        5,
-        5,
-        (char *)bdaddr,
-        (p_listitem->b_selected)?p_widget->style.background:p_widget->style.front
-      );
+      if (!p_listitem->p_device->psz_name[0])
+      {
+        snprintf(
+          bdaddr,
+          18,
+          "%02X:%02X:%02X:%02X:%02X:%02X",
+          p_listitem->p_device->address.val[5],
+          p_listitem->p_device->address.val[4],
+          p_listitem->p_device->address.val[3],
+          p_listitem->p_device->address.val[2],
+          p_listitem->p_device->address.val[1],
+          p_listitem->p_device->address.val[0]
+        );
+        widget_draw_text(
+          p_widget,
+          31,
+          5 + BLESCAN_LISTITEM_OFFY,
+          (char *)bdaddr,
+          p_widget->style.front
+        );
+      }
+      else
+      {
+        widget_draw_text(
+          p_widget,
+          31,
+          5 + BLESCAN_LISTITEM_OFFY,
+          (char *)p_listitem->p_device->psz_name,
+          p_widget->style.front
+        );
+      }
 
-      //ble_leave_critical_section();
+      /* Draw icon. */
+      if (p_listitem->b_selected)
+      {
+        widget_bitblt(
+          p_widget,
+          icons_big,
+          24*p_listitem->p_device->device_type,
+          0,
+          24,
+          24,
+          4,
+          1 + BLESCAN_LISTITEM_OFFY
+        );
+      }
+      else
+      {
+        widget_bitblt(
+          p_widget,
+          icons,
+          16*p_listitem->p_device->device_type,
+          0,
+          16,
+          16,
+          9,
+          5 + BLESCAN_LISTITEM_OFFY
+        );
+      }
+
+      /* Draw a frame when selected. */
+      if (p_listitem->b_selected)
+      {
+        widget_draw_line(
+          p_widget,
+          1,0,p_widget->box.width-2,0,RGB(0x0, 0x8, 0xc)
+        );
+        widget_draw_line(
+          p_widget,
+          1,1,p_widget->box.width-2,1,RGB(0x0, 0x8, 0xc)
+        );
+
+        widget_draw_line(
+          p_widget,
+          1,p_widget->box.height-1,p_widget->box.width-2,p_widget->box.height-1,RGB(0x0, 0x8, 0xc)
+        );
+        widget_draw_line(
+          p_widget,
+          1,p_widget->box.height-2,p_widget->box.width-2,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
+        );
+
+
+        widget_draw_line(
+          p_widget,
+          0,1,0,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
+        );
+        widget_draw_line(
+          p_widget,
+          1,1,1,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
+        );
+
+        widget_draw_line(
+          p_widget,
+          p_widget->box.width-1,1,p_widget->box.width-1,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
+        );
+        widget_draw_line(
+          p_widget,
+          p_widget->box.width-2,1,p_widget->box.width-2,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
+        );
+
+      }
+
     }
   }
 
@@ -127,6 +215,11 @@ int blescan_widget_listitem_drawfunc(widget_t *p_widget)
 }
 
 
+/**
+ * @brief Initialize our BLE scanner list item
+ * @param p_listitem: pointer to a `blescan_widget_listitem_t` structure
+ * @param p_device: pointer to a `ble_device_t` structure, referencing the BLE device associated with this item
+ **/
 
 void blescan_widget_listitem_init(blescan_widget_listitem_t *p_listitem, ble_device_t *p_device)
 {
@@ -146,6 +239,13 @@ void blescan_widget_listitem_init(blescan_widget_listitem_t *p_listitem, ble_dev
   widget_set_eventhandler(&p_listitem->widget, blescan_widget_listitem_event_handler);
 }
 
+
+/**
+ * @brief Update widget list item BLE device structure.
+ * @param p_listitem: pointer to a `blescan_widget_listitem_t` structure
+ * @param p_device: pointer to a `ble_device_t` structure that will be associated with this item
+ **/
+
 void blescan_widget_listitem_update(blescan_widget_listitem_t *p_listitem, ble_device_t *p_device)
 {
   /* Update BLE device. */
@@ -153,8 +253,15 @@ void blescan_widget_listitem_update(blescan_widget_listitem_t *p_listitem, ble_d
 }
 
 
-
-
+/**
+ * @brief BLE scanner tile event handler
+ * @param p_tile: pointer to a `tile_t` structure referencing the current tile
+ * @param event: event type
+ * @param x: x-coordinate of the event (if required)
+ * @param y: y-coordinate of the event (if required)
+ * @param velocity: swipe velocity (only set for user interaction event)
+ * @return TE_PROCESSED if event has been processed, TE_ERROR otherwise.
+ **/
 
 int scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
 {
@@ -187,6 +294,7 @@ int scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y,
   /* Success. */
   return TE_PROCESSED;
 }
+
 
 /**
  * blescan_widget_list_event_handler()
@@ -247,6 +355,15 @@ int blescan_widget_list_event_handler(widget_t *p_widget, widget_event_t event, 
   return b_processed?WE_PROCESSED:pfn_lb_event_handler(p_widget, event, x, y, velocity);
 }
 
+
+/**
+ * @brief Event callback used to handle device events sent by the BLE controller
+ * @param event_handler_arg: argument passed by the BLE controller
+ * @param event_base: event category
+ * @param event_id: event ID
+ * @param event_data: pointer to data associated to the current event
+ **/
+
 void on_device_event(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
   int i;
@@ -301,38 +418,19 @@ void on_device_event(void *event_handler_arg, esp_event_base_t event_base, int32
   }
 }
 
-void on_device_found(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
-{
-  int i;
-  ble_device_t *peer;
-  char psz_label[18];
 
-  ble_enter_critical_section();
-  ui_enter_critical_section();
-
-  /* Empty list. */
-  for (i=0; i<10; i++)
-  {
-    widget_listbox_remove(&lb_devices, (widget_t *)&g_devices_names[i]);
-  }
-
-  g_devices_nb = ble_get_devices_nb();
-  
-  /* Add device. */
-  for (i=0; i<g_devices_nb; i++)
-  {
-    peer = ble_get_device(i);
-    blescan_widget_listitem_update(&g_devices_names[i], peer);
-    widget_listbox_add(&lb_devices, (widget_t *)&g_devices_names[i]);
-  }
-  
-  ui_leave_critical_section();
-  ble_leave_critical_section();
-}
+/**
+ * @brief Initialize the BLE scanner tile
+ * @return pointer to the initialized tile (`tile_t` structure)
+ **/
 
 tile_t *tile_blescan_init(void)
 {
   int i;
+
+  /* Load icons. */
+  icons = load_image(ble_icons);
+  icons_big = load_image(ble_icons_big);
 
   /* Initialize our modal box. */
   p_bleinfo_modal = modal_bleinfo_init();

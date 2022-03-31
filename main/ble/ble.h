@@ -37,8 +37,34 @@ typedef enum {
   BLE_FINGERPRINT
 } ble_controller_mode_t;
 
+typedef enum {
+  UNKNOWN,
+  PHONE,
+  APPLE,
+  FITBIT,
+  SMARTLOCK,
+  KEYFOB,
+  HEARTBEAT,
+  SMARTWATCH,
+  SOUND
+} ble_device_type_t;
+
+typedef struct {
+  uint8_t record_type;
+  uint8_t *pattern;
+  uint8_t pattern_size;
+} ble_device_fp_pattern_t;
+
+typedef struct {
+  ble_device_type_t device_type;
+  ble_device_fp_pattern_t *patterns;
+} ble_device_fingerprint_t;
+
 typedef struct tBleDevice {
   
+  /* Device type. */
+  ble_device_type_t device_type;
+
   /* Device Bluetooth address. */
   ble_addr_t address;
 

@@ -47,6 +47,177 @@ const ble_company_id_t BLE_COMPANY_IDS[] = {
   {0xFFFF, NULL, NULL}
 };
 
+__attribute__ ((aligned(4)))
+const ble_device_fp_pattern_t FITBIT_CHARGEHR_FP[] = {
+  {0x06, (uint8_t *)"\xba\x56\x89\xa6\xfa\xbf\xa2\xbd\x01\x46\x7d\x6e\x00\xfb\xab\xad", 16},
+  {0x09, (uint8_t *)"\x43\x68\x61\x72\x67\x65\x20\x48\x52", 9},
+  {0x0a, (uint8_t *)"\xfa", 1},
+  {0x16, (uint8_t *)"\x0a\x18\x12", 3},
+  {0, NULL, 0}
+};
+
+__attribute__ ((aligned(4)))
+const ble_device_fp_pattern_t FITBIT_CHARGE_FP[] = {
+  {0x06, (uint8_t *)"\xba\x56\x89\xa6\xfa\xbf\xa2\xbd\x01\x46\x7d\x6e\x00\xfb\xab\xad", 16},
+  {0x09, (uint8_t *)"\x43\x68\x61\x72\x67\x65", 6},
+  {0x0a, (uint8_t *)"\xfa", 1},
+  {0x16, (uint8_t *)"\x0a\x18\x08", 3},
+  {0, NULL, 0}
+};
+
+__attribute__ ((aligned(4)))
+const ble_device_fp_pattern_t FITBIT_CHARGE3_FP[] = {
+  {0x06, (uint8_t *)"\xba\x56\x89\xa6\xfa\xbf\xa2\xbd\x01\x46\x7d\x6e\x00\xfb\xab\xad", 16},
+  {0x16, (uint8_t *)"\x0a\x18\x1c", 3},
+  {0, NULL, 0}
+};
+
+__attribute__ ((aligned(4)))
+const ble_device_fp_pattern_t FITBIT_ONE_FP[] = {
+  {0x09, (uint8_t *)(uint8_t *)"\x4f\x6e\x65", 3},
+  {0x0a, (uint8_t *)(uint8_t *)"\xfa", 1},
+  {0x16, (uint8_t *)(uint8_t *)"\x0a\x18\x05\x04", 4},
+  {0, NULL, 0}
+};
+
+__attribute__ ((aligned(4)))
+const ble_device_fp_pattern_t FITBIT_FLEX_FP[] = {
+  {0x01, (uint8_t *)"\x06", 1},
+  {0x06, (uint8_t *)"\xba\x56\x89\xa6\xfa\xbf\xa2\xbd\x01\x46\x7d\x6e\xa7\x53\xab\xad", 16},
+  {0x09, (uint8_t *)"\x46\x6c\x65\x78", 4},
+  {0x0a, (uint8_t *)"\xfa", 1},
+  {0x16, (uint8_t *)"\x0a\x18\x07\x04", 4},
+  {0, NULL, 0}
+};
+
+__attribute__ ((aligned(4)))
+const ble_device_fp_pattern_t FITBIT_SURGE_FP[] = {
+  {0x01, (uint8_t *)"\x06", 1},
+  {0x06, (uint8_t *)"\xba\x56\x89\xa6\xfa\xbf\xa2\xbd\x01\x46\x7d\x6e\x00\xfb\xab\xad", 16},
+  {0x09, (uint8_t *)"\x53\x75\x72\x67\x65", 5},
+  {0x16, (uint8_t *)"\x0a\x18\x10", 4},
+  {0, NULL, 0}
+};
+
+const ble_device_fp_pattern_t GARMIN_FENIX3_FP[] = {
+  {0x07, (uint8_t *)"\x66\x9a\x0c\x20\x00\x08\x9a\x94\xe3\x11\x7b\x66\x10\x3e\x4e\x6a", 16},
+  {0x09, (uint8_t *)"\x66\x65\x6e\x69\x78\x20\x33\x00", 8},
+  {0x16, (uint8_t *)"\x10\x3e\x00\x12\x00", 5},
+  {0, NULL, 0}
+};
+
+const ble_device_fp_pattern_t GARMIN_FORERUNNER_FP[] = {
+  {0x07, (uint8_t *)"\x66\x9a\x0c\x20\x00\x08\x9a\x94\xe3\x11\x7b\x66\x10\x3e\x4e\x6a", 16},
+  {0x09, (uint8_t *)"\x46\x6f\x72\x65\x72\x75\x6e\x6e\x65\x72", 10},
+  {0x16, (uint8_t *)"\x10\x3e\x00\x02\x00", 5},
+  {0, NULL, 0}
+};
+
+const ble_device_fp_pattern_t APPLE_WATCH_FP[] = {
+  {0x01, (uint8_t *)"\x1a", 1},
+  {0xFF, (uint8_t *)"\x4c\x00\x0c\x0e\x00\x5c", 6},
+  {0x00, NULL, 0}
+};
+
+const ble_device_fp_pattern_t APPLE_IPHONE_FP[] = {
+  {0x01, (uint8_t *)"\x1a", 1},
+  {0xFF, (uint8_t *)"\x4c\x00\x0c\x0e", 4},
+  {0x00, NULL, 0}
+};
+
+const ble_device_fp_pattern_t WITHINGS_ACTIVITE_FP[] = {
+  {0x01, (uint8_t *)"\x06", 1},
+  {0x09, (uint8_t *)"\x57\x20\x41\x63\x74\x69\x76\x69\x74\x65", 10},
+  {0xFF, (uint8_t *)"\x00\x24\xe4\x36", 4},
+  {0x00, NULL, 0}
+};
+
+const ble_device_fp_pattern_t NIKE_FUELBAND_FP[] = {
+  {0x01, (uint8_t *)"\x06", 1},
+  {0x07, (uint8_t *)"\x66\x9a\x0c\x20\x00\x08\xc1\x81\xe2\x11\xdd\x31\x10\xc4\xcd\x83", 16},
+  {0x00, NULL, 0}
+};
+
+const ble_device_fp_pattern_t JAWBONE_UP2_FP[] = {
+  {0x01, (uint8_t *)"\x06", 1},
+  {0x06, (uint8_t *)"\xbc\x4f\x45\xf3\x56\x50\xa1\x9c\x11\x41\x80\x45\x00\x10\x1c\x15", 16},
+  {0x09, (uint8_t *)"\x55\x50\x32", 3},
+  {0x16, (uint8_t *)"\x0a\x18\x02", 3},
+  {0x00, NULL, 0}
+};
+
+const ble_device_fp_pattern_t AICASE_PADLOCK_FP[] = {
+  {0x01, (uint8_t *)"\x06", 1},
+  {0x09, (uint8_t *)"\x46\x42\x35\x30\x53", 5},
+  {0xff, (uint8_t *)"\x48\x53\x7f\x06\x02\x01\x02\x85\x64\x00\x01\x00", 12},
+  {0x00, NULL, 0}
+};
+
+const ble_device_fingerprint_t BLE_DEVICES_FP[] = {
+  {
+    SMARTWATCH,
+    APPLE_WATCH_FP
+  },
+  {
+    SMARTWATCH,
+    WITHINGS_ACTIVITE_FP
+  },
+  {
+    FITBIT,
+    FITBIT_CHARGEHR_FP
+  },
+  {
+    FITBIT,
+    FITBIT_CHARGE_FP
+  },
+  {
+    FITBIT,
+    FITBIT_CHARGE3_FP
+  },
+  {
+    FITBIT,
+    FITBIT_ONE_FP
+  },
+  {
+    FITBIT,
+    FITBIT_FLEX_FP
+  },
+  {
+    FITBIT,
+    FITBIT_SURGE_FP
+  },
+  {
+    SMARTWATCH,
+    GARMIN_FENIX3_FP
+  },
+  {
+    SMARTWATCH,
+    GARMIN_FORERUNNER_FP
+  },
+  {
+    PHONE,
+    APPLE_IPHONE_FP
+  },
+  {
+    HEARTBEAT,
+    NIKE_FUELBAND_FP
+  },
+  {
+    HEARTBEAT,
+    JAWBONE_UP2_FP
+  },
+  {
+    SMARTLOCK,
+    AICASE_PADLOCK_FP
+  },
+  {
+    UNKNOWN,
+    NULL
+  }
+};
+
+
+
 void llc_llcp_version_ind_pdu_send(uint16_t conhdl);
 
 void ble_store_config_init(void);
@@ -147,10 +318,83 @@ int ble_adv_extract_name(uint8_t *p_adv_data, int adv_length, char *psz_device_n
     return -1;
 }
 
+ble_device_type_t ble_adv_classify(uint8_t *p_adv_data, int adv_length)
+{
+  int i, name_length=0, j, k, z;
+  bool found, similar;
+  uint8_t record_size, record_type;
+  int valid_records, nb_records;
+
+  if (adv_length < 2)
+    return UNKNOWN;
+
+  /* Iterate over our DB. */
+  j = 0;
+  while (BLE_DEVICES_FP[j].patterns != NULL)
+  {
+    /* Count number of records. */
+    nb_records = 0;
+    while (BLE_DEVICES_FP[j].patterns[nb_records++].pattern != NULL);
+    nb_records--;
+
+    valid_records = 0;
+    i = 0;
+    while (i < adv_length)
+    {
+      record_size = p_adv_data[i];
+      if ((i + record_size + 1) <= adv_length)
+      {
+        /* Get advertising record type. */
+        record_type = p_adv_data[i+1];
+
+        /* Check if the record is in our known patterns. */
+        k = 0;
+        while (BLE_DEVICES_FP[j].patterns[k].pattern != NULL)
+        {
+          if ((BLE_DEVICES_FP[j].patterns[k].record_type == record_type) && ((record_size-1) >= BLE_DEVICES_FP[j].patterns[k].pattern_size))
+          {
+            if (!memcmp(&p_adv_data[i+2], BLE_DEVICES_FP[j].patterns[k].pattern, BLE_DEVICES_FP[j].patterns[k].pattern_size))
+            {
+              /* Count this AD record as a valid one. */
+              valid_records++;
+
+              /* Exit while loop. */
+              break;
+            }
+          }
+
+          /* Go to next AD record pattern. */
+          k++;
+        }
+
+        /* Skip record. */
+        i += record_size + 1;
+      }
+      else
+        break;
+    }
+
+    /* Do we have an exact match ? */
+    if (nb_records == valid_records)
+    {
+      ESP_LOGI(TAG, "fingerprint found, device_type: %d", BLE_DEVICES_FP[j].device_type);
+
+      /* Yes, return device type. */
+      return BLE_DEVICES_FP[j].device_type;
+    }
+
+    /* Go to next fingerprint. */
+    j++;
+  }
+
+  /* Default: unknown device. */
+  return UNKNOWN;
+}
+
 
 int on_ble_gap_event(struct ble_gap_event *event, void *arg)
 {
-  int i;
+  int i,j;
   bool b_device_known = false;
   char dbg[256];
 
@@ -169,9 +413,9 @@ int on_ble_gap_event(struct ble_gap_event *event, void *arg)
             /* Send VERSION_IND PDU. */
             _llc_llcp_version_ind_pdu_send(g_ble_ctrl.conn_handle);
 
-            //uint8_t pdu[] = {0x0C, 0x08, 0x00, 0x00, 0x00, 0x00};
+            //uint8_t pdu[] = {0x0C\x08\x00\x00\x00\x00};
             //send_control_pdu(g_ble_ctrl.conn_handle, pdu, 6);
-            //uint8_t pdu[] = {0x0C, 0x08, 0x00, 0x00, 0x00, 0x00};
+            //uint8_t pdu[] = {0x0C\x08\x00\x00\x00\x00};
             //rom_llc_llcp_send(g_ble_ctrl.conn_handle, pdu, pdu[0]);
 
             /* Connection successfully established. */
@@ -204,18 +448,6 @@ int on_ble_gap_event(struct ble_gap_event *event, void *arg)
               //ESP_LOGI(TAG, "received an advertising report");
               
               ble_enter_critical_section();
-              #if 0
-              snprintf(
-                dbg, 256, "%02x:%02x:%02x:%02x:%02x:%02x",
-                event->disc.addr.val[5],
-                event->disc.addr.val[4],
-                event->disc.addr.val[3],
-                event->disc.addr.val[2],
-                event->disc.addr.val[1],
-                event->disc.addr.val[0]
-              );
-              printf("-> %s\n", dbg);
-              #endif 
 
               /* Check if we got a new device. */
               for (i=0; i<g_devices_nb; i++)
@@ -230,24 +462,18 @@ int on_ble_gap_event(struct ble_gap_event *event, void *arg)
 
                   /* Update freshness. */
                   g_devices[i].freshness = BLE_FRESHNESS_DEFAULT;
-
-                  //printf("Device %d updated: freshness=%d\n", i, g_devices[i].freshness);
                 }
                 else
                 {
                   if (g_devices[i].freshness == 0)
                   {
-                    //printf("Device %d has disappeared\n", i);
-
                     /* Remove device from list. */
                     if (i == (g_devices_nb - 1))
                     {
-                      //printf("Remove last item of our list\n");
                       g_devices_nb--;
                     }
                     else
                     {
-                      //printf("Remove item #%d\n", i);
                       memcpy((void *)&g_devices[i], (void *)&g_devices[i+1], sizeof(ble_device_t) * (g_devices_nb - i - 1));
                       g_devices_nb--;
 
@@ -259,7 +485,6 @@ int on_ble_gap_event(struct ble_gap_event *event, void *arg)
                   else
                   {
                     g_devices[i].freshness--;
-                    //printf("Device %d: freshness=%d\n", i, g_devices[i].freshness);
                   }
                 }
               }
@@ -275,6 +500,26 @@ int on_ble_gap_event(struct ble_gap_event *event, void *arg)
               /* Add device to list, if a slot remains. */
               if (g_devices_nb < BLESCAN_DEVICES_MAX)
               {
+                /* Debug: show AD records for device. */
+                ESP_LOGI(TAG, "Device found: %02x:%02x:%02x:%02x:%02x:%02x",
+                event->disc.addr.val[5],
+                event->disc.addr.val[4],
+                event->disc.addr.val[3],
+                event->disc.addr.val[2],
+                event->disc.addr.val[1],
+                event->disc.addr.val[0]
+                );
+                
+                printf("AD records: ");
+                for (j=0; j<event->disc.length_data; j++)
+                {
+                  printf("%02x", event->disc.data[j]);
+                }
+                printf("\r\n");
+
+                /* Classify device based on its AD records. */
+                g_devices[i].device_type = ble_adv_classify(event->disc.data, event->disc.length_data);
+
                 /* Copy bluetooth address. */
                 memcpy(&g_devices[g_devices_nb].address, &event->disc.addr, sizeof(ble_addr_t));
 
@@ -325,8 +570,6 @@ int on_ble_gap_event(struct ble_gap_event *event, void *arg)
                   /* Parse advertising data to extract name. */
                   if (ble_adv_extract_name(event->disc.data, event->disc.length_data, g_devices[i].psz_name, BLE_DEVICE_NAME_MAXSIZE) > 0)
                   {
-                    //printf("Device found: %s\n", g_devices[i].psz_name);
-
                     /* Post a BLE_DEVICE_FOUND event. */
                     esp_event_post_to(
                       g_ble_ctrl.evt_loop_handle,
