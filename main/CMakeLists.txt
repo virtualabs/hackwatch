@@ -1,10 +1,6 @@
-# Edit following two lines to set component requirements (see docs)
-set(COMPONENT_REQUIRES twatch-lib)
-set(COMPONENT_PRIV_REQUIRES nvs_flash bt)
-
 set(
- COMPONENT_SRCS 
- "main.c"
+ SOURCES
+ "main.c" 
  "menu.c"
  "img/digits.c"
  "img/digits_small.c"
@@ -17,13 +13,13 @@ set(
 )
 
 if (CONFIG_INCLUDE_IR)
-  list(APPEND COMPONENT_SRCS
+  list(APPEND SOURCES
     "ui/tile-tvbgone.c"
   )
 endif()
 
 if (CONFIG_INCLUDE_BLE)
-    list(APPEND COMPONENT_SRCS
+    list(APPEND SOURCES
         "ble/ble.c"
         "ble/ble_hack.c"
         "img/ble_icons.c"
@@ -34,7 +30,7 @@ if (CONFIG_INCLUDE_BLE)
 endif()
 
 if (CONFIG_INCLUDE_WIFI)
-  list(APPEND COMPONENT_SRCS
+  list(APPEND SOURCES
     "wifi/wifi.c"
     "wifi/wifi_aplist.c"
     "wifi/wifiscan.c"
@@ -42,20 +38,22 @@ if (CONFIG_INCLUDE_WIFI)
   )
 
   if (CONFIG_WIFI_SCANNER)
-    list( APPEND COMPONENT_SRCS
+    list( APPEND SOURCES
     "ui/tile-scanner.c"
     "ui/tile-apinfo.c"
     )
   endif()
 
   if (CONFIG_WIFI_CHANNELS)
-    list( APPEND COMPONENT_SRCS "ui/tile-channels.c")
+    list( APPEND SOURCES "ui/tile-channels.c")
   endif()
 
   if (CONFIG_WIFI_ROGUEAP)
-    list( APPEND COMPONENT_SRCS "ui/tile-rogueap.c")
+    list( APPEND SOURCES "ui/tile-rogueap.c")
   endif()
 endif()
 
-
-register_component()
+idf_component_register(
+    SRCS ${SOURCES}
+    INCLUDE_DIRS "."
+)
