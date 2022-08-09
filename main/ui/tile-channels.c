@@ -90,7 +90,7 @@ int channels_draw(tile_t *p_tile)
     39,
     240-6,
     39,
-    RGB(0x0, 0x8, 0xc)
+    RGB(0x1, 0x2, 0x3)
   );
   tile_draw_line(
     p_tile,
@@ -98,7 +98,7 @@ int channels_draw(tile_t *p_tile)
     40,
     2,
     210,
-    RGB(0x0, 0x8, 0xc)
+    RGB(0x1, 0x2, 0x3)
   );
   tile_draw_line(
     p_tile,
@@ -106,7 +106,7 @@ int channels_draw(tile_t *p_tile)
     211,
     240-6,
     211,
-    RGB(0x0, 0x8, 0xc)
+    RGB(0x1, 0x2, 0x3)
   );
   tile_draw_line(
     p_tile,
@@ -114,7 +114,7 @@ int channels_draw(tile_t *p_tile)
     40,
     240-6,
     210,
-    RGB(0x0, 0x8, 0xc)
+    RGB(0x1, 0x2, 0x3)
   );
 
   /* Draw rules. */

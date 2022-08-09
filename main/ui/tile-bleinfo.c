@@ -68,29 +68,29 @@ modal_t *modal_bleinfo_init(void)
   /* First label: BLE version. */
   widget_label_init(&ble_ver_lbl, &bleinfo_modal.tile, 10, 52, 80, 15, "BLE Ver.:");
   widget_label_set_fontsize(&ble_ver_lbl, LABEL_FONT_SMALL);
-  widget_set_front_color(&ble_ver_lbl.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_front_color(&ble_ver_lbl.widget, RGB(0x1, 0x2, 0x3));
   widget_label_init(&ble_ver_value_lbl, &bleinfo_modal.tile, 90, 52, 80, 20, "");
   widget_label_set_fontsize(&ble_ver_value_lbl, LABEL_FONT_SMALL);
 
   /* Second label: Vendor name. */
   widget_label_init(&ble_vendor_lbl, &bleinfo_modal.tile, 10, 72, 80, 15, "Vendor. :");
   widget_label_set_fontsize(&ble_vendor_lbl, LABEL_FONT_SMALL);
-  widget_set_front_color(&ble_vendor_lbl.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_front_color(&ble_vendor_lbl.widget, RGB(0x1, 0x2, 0x3));
   widget_label_init(&ble_vendor_value_lbl, &bleinfo_modal.tile, 90, 72, 80, 20, "");
   widget_label_set_fontsize(&ble_vendor_value_lbl, LABEL_FONT_SMALL);
 
   /* Third label: software version. */
   widget_label_init(&ble_software_lbl, &bleinfo_modal.tile, 10, 92, 80, 15, "Softw.  :");
   widget_label_set_fontsize(&ble_software_lbl, LABEL_FONT_SMALL);
-  widget_set_front_color(&ble_software_lbl.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_front_color(&ble_software_lbl.widget, RGB(0x1, 0x2, 0x3));
   widget_label_init(&ble_software_value_lbl, &bleinfo_modal.tile, 90, 92, 80, 20, "");
   widget_label_set_fontsize(&ble_software_value_lbl, LABEL_FONT_SMALL);
 
   
   /* Add OK button. */
   widget_button_init(&ok_btn, &bleinfo_modal.tile, (240 - 120)/2, 175, 120, 50, "Ok");
-  widget_set_bg_color(&ok_btn.widget, RGB(0x0, 0x8, 0xc));
-  widget_set_border_color(&ok_btn.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_bg_color(&ok_btn.widget, RGB(0x1, 0x2, 0x3));
+  widget_set_border_color(&ok_btn.widget, RGB(0x1, 0x2, 0x3));
   widget_button_set_handler(&ok_btn, close_modal);
 
   /* Add a frame. */

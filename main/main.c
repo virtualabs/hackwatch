@@ -19,22 +19,22 @@
 
 /* Include WiFi icon if needed. */
 #ifdef CONFIG_INCLUDE_WIFI
-  #include "img/wifi_icon.h"
+  #include "img/wifi_icon_8bpp.h"
 #endif
 
 /* Include WiFi icon if needed. */
 #ifdef CONFIG_INCLUDE_BLE
   #include "ble/ble.h"
-  #include "img/bluetooth_icon.h"
+  #include "img/bluetooth_icon_8bpp.h"
 #endif
 
 
 /* Include IR icon if needed. */
 #ifdef CONFIG_INCLUDE_IR
-  #include "img/ir_icon.h"
+  #include "img/ir_icon_8bpp.h"
 #endif
 
-#include "img/settings_icon.h"
+#include "img/settings_icon_8bpp.h"
 /* #include "img/bluetooth_icon.h" */
 
 
@@ -79,13 +79,6 @@ void main_ui(void *parameter)
   tile_init(&main_tile, NULL);
   widget_label_init(&label_main, &main_tile, 80, 110, 220, 45, "Main tile");
 
-  /* For the next release. 
-    tile_init(&bluetooth_tile, NULL);
-    bluetooth = load_image(bluetooth_icon);
-    widget_image_init(&bluetooth_img, &bluetooth_tile, 80, (240-88)/2 - 20, 88, 88, bluetooth);
-    widget_label_init(&bluetooth_lbl, &bluetooth_tile, 60, 150, 120, 50, "Bluetooth");
-  */
-
   p_settings_one_tile = tile_settings_one_init();
   p_settings_two_tile = tile_settings_two_init();
   p_settings_three_tile = tile_settings_three_init();
@@ -94,19 +87,9 @@ void main_ui(void *parameter)
   p_tile_first = NULL;
   p_tile_current = NULL;
 
-    /* Add clock tile (mandatory). */
+  /* Add clock tile (mandatory). */
   p_tile_current = menu_add_menu(p_tile_current, tile_clock_init());
   p_tile_first = p_tile_current;
-
-  /* Add WiFi menu (if enabled). */
-  #ifdef CONFIG_INCLUDE_WIFI
-    /* WiFi screen */
-    tile_init(&wifi_tile, NULL);
-    wifi = load_image(wifi_icon);
-    widget_image_init(&wifi_img, &wifi_tile, 70, (240-88)/2 - 20, 100, 88, wifi);
-    widget_label_init(&wifi_lbl, &wifi_tile, 90, 150, 120, 50, "WiFi");
-    p_tile_current = menu_add_menu(p_tile_current, &wifi_tile);
-  #endif
 
   /* Add Bluetooth Low Energy screen (if enabled). */
   #ifdef CONFIG_INCLUDE_BLE
@@ -117,6 +100,15 @@ void main_ui(void *parameter)
     p_tile_current = menu_add_menu(p_tile_current, &bluetooth_tile);
   #endif /* CONFIG_INCLUDE_BLE */
 
+  /* Add WiFi menu (if enabled). */
+  #ifdef CONFIG_INCLUDE_WIFI
+    /* WiFi screen */
+    tile_init(&wifi_tile, NULL);
+    wifi = load_image(wifi_icon);
+    widget_image_init(&wifi_img, &wifi_tile, 70, (240-88)/2 - 20, 100, 88, wifi);
+    widget_label_init(&wifi_lbl, &wifi_tile, 90, 150, 120, 50, "WiFi");
+    p_tile_current = menu_add_menu(p_tile_current, &wifi_tile);
+  #endif
 
   /* Add IR menu (if enabled). */
   #ifdef CONFIG_INCLUDE_IR
@@ -138,28 +130,28 @@ void main_ui(void *parameter)
   /* Loop on first tile. */
   tile_link_right(p_tile_current, p_tile_first);
 
-  /* With bluetooth menu, for next release
-  tile_link_right(&settings_tile, &bluetooth_tile);
-  tile_link_right(&bluetooth_tile, p_clock_tile);
-  */
-
- #ifdef CONFIG_INCLUDE_BLE
+  #ifdef CONFIG_INCLUDE_BLE
     /* BLE "submenu" */
     p_sub_first = NULL;
     p_sub_current = NULL;
     
-    #ifdef CONFIG_BLE_SCANNER
-      p_sub_current = menu_add_tile(&bluetooth_tile, p_sub_current, tile_blescan_init);
-      if (p_sub_first == NULL)
-        p_sub_first = p_sub_current;
-    #endif
+    p_sub_current = menu_add_tile(&bluetooth_tile, p_sub_current, tile_blescan_init);
+    printf("created tile blescan: 0x%08x\n", (uint32_t)p_sub_current);
+    printf("(ble)p_sub_current: 0x%08x\n", (uint32_t)p_sub_current);
+    if (p_sub_first == NULL)
+      p_sub_first = p_sub_current;
+    printf("(ble)p_sub_first: 0x%08x\n", (uint32_t)p_sub_first);
     
     if (p_sub_current != p_sub_first)
+    {
       tile_link_right(p_sub_current, p_sub_first);
+      printf("(ble) link right: current=0x%08x right=0x%08x\n", (uint32_t)p_sub_current, (uint32_t)p_sub_first);
+    }
     tile_link_bottom(&bluetooth_tile, p_sub_first);
- #endif 
+    printf("(ble) link bottom: tile=0x%08x bottom=0x%08x\n", (uint32_t)&bluetooth_tile, (uint32_t)p_sub_first);
+  #endif 
 
-  #ifdef CONFIG_INCLUDE_WIFI
+#ifdef CONFIG_INCLUDE_WIFI
     /* Wifi "submenu" */
     p_sub_first = NULL;
     p_sub_current = NULL;
@@ -204,6 +196,33 @@ void main_ui(void *parameter)
   /* Select our main tile. */
   ui_select_tile(p_tile_first);
 
+  /* Introspect tile structure */
+  tile_t *p_top, *p_sec_top;
+  tile_t *p_first_level;
+  p_top = p_first_level = p_tile_first;
+  tile_t *p_sec_level = NULL;
+  while (p_first_level != NULL)
+  {
+    printf("Top menu tile: 0x%08x\n", (uint32_t)p_first_level);
+    if (p_first_level->p_bottom != NULL)
+    {
+      p_sec_top = p_sec_level = p_first_level->p_bottom;
+      while (p_sec_level != NULL)
+      {
+        printf("  - Sub menu tile: 0x%08x\n", (uint32_t)p_sec_level);
+        /* Next tile */
+        p_sec_level = p_sec_level->p_right;
+        if (p_sec_level == p_sec_top)
+          break;        
+      }
+    }
+
+    /* Next tile */
+    p_first_level = p_first_level->p_right;
+    if (p_first_level == p_top)
+      break;
+  }
+
   /* Enable eco mode. */
   enable_ecomode();
 
@@ -238,5 +257,5 @@ void app_main(void)
   #endif
 
   /* Start UI in a dedicated task. */
-  xTaskCreate(main_ui, "main_ui", 10000, NULL, 1, NULL);
+  xTaskCreate(main_ui, "main_ui", 15000, NULL, 1, NULL);
 }

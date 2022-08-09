@@ -15,9 +15,9 @@
 tile_t blescan_tile;
 blescan_widget_listitem_t g_devices_names[10];
 char names[10][BLE_DEVICE_NAME_MAXSIZE];
-widget_label_t lbl_scanner;
+widget_label_t ble_lbl_scanner;
 widget_listbox_t lb_devices;
-volatile int g_devices_nb;
+volatile int g_ble_devices_nb;
 FEventHandler pfn_lb_event_handler;
 modal_t *p_bleinfo_modal;
 image_t *icons, *icons_big;
@@ -170,39 +170,39 @@ int blescan_widget_listitem_drawfunc(widget_t *p_widget)
       {
         widget_draw_line(
           p_widget,
-          1,0,p_widget->box.width-2,0,RGB(0x0, 0x8, 0xc)
+          1,0,p_widget->box.width-2,0,RGB(0x1, 0x2, 0x3)
         );
         widget_draw_line(
           p_widget,
-          1,1,p_widget->box.width-2,1,RGB(0x0, 0x8, 0xc)
-        );
-
-        widget_draw_line(
-          p_widget,
-          1,p_widget->box.height-1,p_widget->box.width-2,p_widget->box.height-1,RGB(0x0, 0x8, 0xc)
-        );
-        widget_draw_line(
-          p_widget,
-          1,p_widget->box.height-2,p_widget->box.width-2,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
-        );
-
-
-        widget_draw_line(
-          p_widget,
-          0,1,0,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
-        );
-        widget_draw_line(
-          p_widget,
-          1,1,1,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
+          1,1,p_widget->box.width-2,1,RGB(0x1, 0x2, 0x3)
         );
 
         widget_draw_line(
           p_widget,
-          p_widget->box.width-1,1,p_widget->box.width-1,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
+          1,p_widget->box.height-1,p_widget->box.width-2,p_widget->box.height-1,RGB(0x1, 0x2, 0x3)
         );
         widget_draw_line(
           p_widget,
-          p_widget->box.width-2,1,p_widget->box.width-2,p_widget->box.height-2,RGB(0x0, 0x8, 0xc)
+          1,p_widget->box.height-2,p_widget->box.width-2,p_widget->box.height-2,RGB(0x1, 0x2, 0x3)
+        );
+
+
+        widget_draw_line(
+          p_widget,
+          0,1,0,p_widget->box.height-2,RGB(0x1, 0x2, 0x3)
+        );
+        widget_draw_line(
+          p_widget,
+          1,1,1,p_widget->box.height-2,RGB(0x1, 0x2, 0x3)
+        );
+
+        widget_draw_line(
+          p_widget,
+          p_widget->box.width-1,1,p_widget->box.width-1,p_widget->box.height-2,RGB(0x1, 0x2, 0x3)
+        );
+        widget_draw_line(
+          p_widget,
+          p_widget->box.width-2,1,p_widget->box.width-2,p_widget->box.height-2,RGB(0x1, 0x2, 0x3)
         );
 
       }
@@ -263,7 +263,7 @@ void blescan_widget_listitem_update(blescan_widget_listitem_t *p_listitem, ble_d
  * @return TE_PROCESSED if event has been processed, TE_ERROR otherwise.
  **/
 
-int scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
+int ble_scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
 {
   switch (event)
   {
@@ -391,10 +391,10 @@ void on_device_event(void *event_handler_arg, esp_event_base_t event_base, int32
           widget_listbox_remove(&lb_devices, (widget_t *)&g_devices_names[i]);
         }
 
-        g_devices_nb = ble_get_devices_nb();
+        g_ble_devices_nb = ble_get_devices_nb();
         
         /* Add device. */
-        for (i=0; i<g_devices_nb; i++)
+        for (i=0; i<g_ble_devices_nb; i++)
         {
           peer = ble_get_device(i);
           blescan_widget_listitem_update(&g_devices_names[i], peer);
@@ -437,10 +437,10 @@ tile_t *tile_blescan_init(void)
 
   /* Initialize our tile. */
   tile_init(&blescan_tile, NULL);
-  tile_set_event_handler(&blescan_tile, scanner_tile_event_handler);
+  tile_set_event_handler(&blescan_tile, ble_scanner_tile_event_handler);
 
   /* Initialize our title label */
-  widget_label_init(&lbl_scanner, &blescan_tile, 3, 3, 237, 36, "BLE Devices");
+  widget_label_init(&ble_lbl_scanner, &blescan_tile, 3, 3, 237, 36, "BLE Devices");
 
   /* Initialize our listbox. */
   widget_listbox_init(&lb_devices, &blescan_tile, 3, 45, 234, 190);
@@ -473,7 +473,9 @@ tile_t *tile_blescan_init(void)
     blescan_widget_listitem_init(&g_devices_names[i], NULL);
   }
 
-  g_devices_nb = 0;
+  g_ble_devices_nb = 0;
+
+  printf("blescan ok\n");
 
   /* Return our tile. */
   return &blescan_tile;

@@ -520,7 +520,7 @@ tile_t *tile_tvbgone_init(void)
   /* Add a ON/OFF switch */
   widget_switch_init(&sw_run, &tile_tvbgone, 140, 65, 80, 32);
   widget_set_border_color(&sw_run.widget, RGB(0xd,0xd,0xd));
-  widget_set_front_color(&sw_run.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_front_color(&sw_run.widget, RGB(0x1, 0x2, 0x3));
   widget_switch_set_handler(&sw_run, start_stop_bgtask);
 
   return &tile_tvbgone;

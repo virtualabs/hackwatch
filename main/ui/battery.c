@@ -53,7 +53,7 @@ int widget_battery_drawfunc(widget_t *p_widget)
       1,
       ((BATTERY_WIDTH-1)*p_battery->percentage)/100,
       BATTERY_HEIGHT-2,
-      twatch_pmu_is_usb_plugged(false)?RGB(0x0, 0x8, 0xc):RGB(0xe,0xe,0xe)
+      twatch_pmu_is_usb_plugged(false)?RGB(0x1, 0x2, 0x3):RGB(0xe,0xe,0xe)
     );
   }
   return 0;

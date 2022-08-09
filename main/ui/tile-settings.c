@@ -211,7 +211,7 @@ tile_t *tile_settings_one_init(void)
 
   /* Initialize our modal box (confirm). */
   modal_init(&confirm, 20, 80, 200, 120);
-  confirm.tile.background_color = RGB(0x0, 0x8, 0xc);
+  confirm.tile.background_color = RGB(0x1, 0x2, 0x3);
   widget_button_init(
     &confirm_btn,
     &confirm.tile,
@@ -234,14 +234,14 @@ tile_t *tile_settings_one_init(void)
     30,
     "Time saved !"
   );
-  widget_set_bg_color(&confirm_txt.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_bg_color(&confirm_txt.widget, RGB(0x1, 0x2, 0x3));
   widget_set_front_color(&confirm_txt.widget, RGB(0xf, 0xf, 0xf));
   
 
   /* Initialize our buttons. */
   widget_button_init(&btn_save_clock, &settings_one_tile, 15, 190, 210, 45, "Save");
-  widget_set_bg_color(&btn_save_clock.widget, RGB(0x0, 0x8, 0xc));
-  widget_set_border_color(&btn_save_clock.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_bg_color(&btn_save_clock.widget, RGB(0x1, 0x2, 0x3));
+  widget_set_border_color(&btn_save_clock.widget, RGB(0x1, 0x2, 0x3));
   widget_button_set_handler(&btn_save_clock, clock_save_onclick);
 
   /* Return our tile. */
@@ -271,8 +271,8 @@ tile_t *tile_settings_two_init(void)
   
   /* Initialize our buttons. */
   widget_button_init(&btn_save_date, &settings_two_tile, 15, 190, 210, 45, "Save date");
-  widget_set_bg_color(&btn_save_date.widget, RGB(0x0, 0x8, 0xc));
-  widget_set_border_color(&btn_save_date.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_bg_color(&btn_save_date.widget, RGB(0x1, 0x2, 0x3));
+  widget_set_border_color(&btn_save_date.widget, RGB(0x1, 0x2, 0x3));
   widget_button_set_handler(&btn_save_date, date_save_onclick);
 
   /* Return our tile. */
@@ -319,8 +319,8 @@ tile_t *tile_settings_three_init(void)
   widget_label_init(&lbl_three_title, &settings_three_tile, 10, 5, 230, 45, "Settings 3/3");
   
   widget_button_init(&btn_orientation, &settings_three_tile, 15, (240-45)/2, 210, 45, "Rotate screen");
-  widget_set_bg_color(&btn_orientation.widget, RGB(0x0, 0x8, 0xc));
-  widget_set_border_color(&btn_orientation.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_bg_color(&btn_orientation.widget, RGB(0x1, 0x2, 0x3));
+  widget_set_border_color(&btn_orientation.widget, RGB(0x1, 0x2, 0x3));
   widget_button_set_handler(&btn_orientation, settings_invert_onclick);
 
   /* Initialize our backlight slider */

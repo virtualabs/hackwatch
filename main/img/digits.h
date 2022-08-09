@@ -4,6 +4,6 @@
 #include "twatch.h"
 
 __attribute__ ((aligned(4)))
-extern const uint16_t digits_img[];
+extern const uint8_t digits_img[];
 
 #endif /* __INC_DIGITS_H */

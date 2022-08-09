@@ -126,8 +126,8 @@ modal_t *modal_apinfo_init(void)
 
   /* Add deauth button. */
   widget_button_init(&deauth_btn, &apinfo_modal.tile, (240 - 120)/2, 175, 120, 50, "Deauth");
-  widget_set_bg_color(&deauth_btn.widget, RGB(0x0, 0x8, 0xc));
-  widget_set_border_color(&deauth_btn.widget, RGB(0x0, 0x8, 0xc));
+  widget_set_bg_color(&deauth_btn.widget, RGB(0x1, 0x2, 0x3));
+  widget_set_border_color(&deauth_btn.widget, RGB(0x1, 0x2, 0x3));
   widget_button_set_handler(&deauth_btn, deauth_toggle);
 
   /* Add a frame. */

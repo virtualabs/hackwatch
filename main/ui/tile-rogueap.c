@@ -116,7 +116,7 @@ tile_t *tile_rogueap_init(void)
 
   /* Add frame. */
   widget_frame_init(&ap_frame, &rogueap_tile, 2, 39, 240-2, 240-39-2);
-  widget_set_border_color((widget_t *)&ap_frame, RGB(0x0, 0x8, 0xc));
+  widget_set_border_color((widget_t *)&ap_frame, RGB(0x1, 0x2, 0x3));
 
   /* No AP selected. */
   psz_target_ap[0] = '\0';
@@ -135,8 +135,8 @@ tile_t *tile_rogueap_init(void)
     50,
     "Sel. AP"
   );
-  widget_set_border_color((widget_t *)&select_btn, RGB(0x0, 0x8, 0xc));
-  widget_set_bg_color((widget_t *)&select_btn, RGB(0x0, 0x8, 0xc));
+  widget_set_border_color((widget_t *)&select_btn, RGB(0x1, 0x2, 0x3));
+  widget_set_bg_color((widget_t *)&select_btn, RGB(0x1, 0x2, 0x3));
   widget_button_set_handler(&select_btn, select_btn_onclick);
 
   widget_button_init(
@@ -148,8 +148,8 @@ tile_t *tile_rogueap_init(void)
     50,
     "Start"
   );
-  widget_set_border_color((widget_t *)&startstop_btn, RGB(0x0, 0x8, 0xc));
-  widget_set_bg_color((widget_t *)&startstop_btn, RGB(0x0, 0x8, 0xc));
+  widget_set_border_color((widget_t *)&startstop_btn, RGB(0x1, 0x2, 0x3));
+  widget_set_bg_color((widget_t *)&startstop_btn, RGB(0x1, 0x2, 0x3));
   widget_button_set_handler(&startstop_btn, start_btn_onclick);
 
   /* Initialize our select AP dialog box. */
@@ -163,8 +163,8 @@ tile_t *tile_rogueap_init(void)
     50, 
     "OK"
   );
-  widget_set_border_color((widget_t *)&ap_select_ok_btn, RGB(0x0, 0x8, 0xc));
-  widget_set_bg_color((widget_t *)&ap_select_ok_btn, RGB(0x0, 0x8, 0xc));
+  widget_set_border_color((widget_t *)&ap_select_ok_btn, RGB(0x1, 0x2, 0x3));
+  widget_set_bg_color((widget_t *)&ap_select_ok_btn, RGB(0x1, 0x2, 0x3));
   widget_button_set_handler(&ap_select_ok_btn, ap_select_modal_onclick);
   wifiscan_init(&ap_wifiscan, &ap_select_modal.tile, 5, 5, 230, 168);
 

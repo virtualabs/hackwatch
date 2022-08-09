@@ -6,9 +6,9 @@ set(
  COMPONENT_SRCS 
  "main.c"
  "menu.c"
- "img/digits.c"
- "img/digits_small.c"
- "img/ticks.c"
+ "img/digits_8bpp.c"
+ "img/digits_small_8bpp.c"
+ "img/ticks_8bpp.c"
  "ui/tile-clock.c"
  "ui/tile-settings.c"
  "ui/timeset.c"
@@ -26,8 +26,8 @@ if (CONFIG_INCLUDE_BLE)
     list(APPEND COMPONENT_SRCS
         "ble/ble.c"
         "ble/ble_hack.c"
-        "img/ble_icons.c"
-        "img/ble_icons_big.c"
+        "img/ble_icons_8bpp.c"
+        "img/ble_icons_big_8bpp.c"
         "ui/tile-blescan.c"
         "ui/tile-bleinfo.c"
     )
