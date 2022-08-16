@@ -69,7 +69,7 @@ typedef int (*F_llc_llcp_send)(uint8_t conhdl, void *param, uint8_t opcode);
 F_llc_llcp_send llc_llcp_send = (F_llc_llcp_send)(LLC_LLCP_SEND_ADDR);
 
 typedef void (*F_llc_llcp_tester_send)(uint8_t conhdl, uint8_t length, uint8_t *data);
-F_llc_llcp_tester_send llc_llcp_tester_send = (F_llc_llcp_send)(LLC_LLCP_TESTER_SEND_ADDR);
+F_llc_llcp_tester_send llc_llcp_tester_send = (F_llc_llcp_tester_send)(LLC_LLCP_TESTER_SEND_ADDR);
 
 extern uint32_t r_llc_util_get_nb_active_link(void);
 
@@ -166,9 +166,7 @@ int _lld_pdu_rx_handler(int param_1,int param_2)
   uint8_t fifo_index;
   uint32_t pkt_header;
   uint8_t *p_pdu;
-  int channel;
   int pkt_size;
-  int rssi;
   int nb_links;
   pkt_hdr_t *p_header = (pkt_hdr_t *)(BLE_RX_PKT_HDR_ADDR);
   #ifdef BLE_HACK_DEBUG
@@ -191,8 +189,6 @@ int _lld_pdu_rx_handler(int param_1,int param_2)
   pkt_header = p_header[fifo_index].header;
 
   /* Extract channel, rssi and packet size. */
-  channel = (pkt_header>>24);
-  rssi = (pkt_header>>16) & 0xff;
   pkt_size = (pkt_header >> 8) & 0xff;
 
   if (pkt_size > 0)
@@ -260,7 +256,7 @@ int _lld_pdu_rx_handler(int param_1,int param_2)
  * This hook is called during each connection event to handle pending BLE PDUs
  * (data PDU + control PDU).
  **/
-
+#if 0
 int _lld_pdu_tx_prog(struct lld_evt_tag *evt)
 {
   int res;
@@ -275,6 +271,7 @@ int _lld_pdu_tx_prog(struct lld_evt_tag *evt)
   res = pfn_lld_pdu_tx_prog(evt);
   return res;
 }
+#endif
 
 /*********************************************
  * Link-layer Control Procedures hooks
@@ -720,13 +717,9 @@ void _llc_llcp_tester_send(uint8_t conhdl, uint8_t length, uint8_t *data)
 
 int _lld_pdu_data_send(struct hci_acl_data_tx *param)
 {
-  struct em_buf_tx_desc *p_desc = NULL;
-  uint8_t *ptr_data;
-  int i;
-  struct co_list_hdr *tx_desc;
-  struct em_desc_node *tx_node;
-  
   #ifdef BLE_HACK_DEBUG
+  struct em_buf_tx_desc *p_desc = NULL;
+  
   esp_rom_printf("lld_pdu_data_send:\r\n");
   esp_rom_printf("  conn_handle: %d\r\n", param->conhdl);
   esp_rom_printf("  bufsize: %d\r\n", param->length);
@@ -838,11 +831,13 @@ void ble_hack_install_hooks(void)
   ((uint32_t *)g_ip_funcs_p)[598] = (uint32_t)_lld_pdu_data_send;
 
   /* Hook r_lld_pdu_tx_prog */
+  #if 0
   pfn_lld_pdu_tx_prog = (void *)(((uint32_t *)g_ip_funcs_p)[600]);
   #ifdef BLE_HACK_DEBUG
   printf("Hooking function %08x with %08x\n", (uint32_t)pfn_lld_pdu_tx_prog, (uint32_t)_lld_pdu_tx_prog);
   #endif
   ((uint32_t *)g_ip_funcs_p)[600] = (uint32_t)_lld_pdu_tx_prog;
+  #endif
 
   /**
    * Install LLCP hooks

@@ -1,6 +1,6 @@
 #include "tile-clock.h"
 #include "../img/digits.h"
-#include "../img/ir_small.h"
+#include "../img/ir_small_8bpp.h"
 
 #define HOURS_X       15
 #define HOURS_Y       10

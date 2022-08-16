@@ -5,9 +5,8 @@
 
 static modal_t bleinfo_modal;
 static widget_label_t title_lbl, ble_ver_lbl, ble_ver_value_lbl, ble_vendor_lbl;
-static widget_label_t ble_vendor_value_lbl, ble_ver_stack_lbl, ble_ver_stack_value_lbl;
+static widget_label_t ble_vendor_value_lbl;
 static widget_label_t ble_software_lbl, ble_software_value_lbl;
-static widget_label_t error_lbl;
 static widget_spinner_t wait_spinner;
 static widget_button_t ok_btn;
 static widget_frame_t frame;
@@ -63,7 +62,7 @@ modal_t *modal_bleinfo_init(void)
   
   /* Spinner (hidden by default). */
   widget_spinner_init(&wait_spinner, &bleinfo_modal.tile, 10, 52, 220, 150);
-  widget_set_visible(&wait_spinner, WIDGET_HIDDEN);
+  widget_set_visible(WIDGET(&wait_spinner), WIDGET_HIDDEN);
 
   /* First label: BLE version. */
   widget_label_init(&ble_ver_lbl, &bleinfo_modal.tile, 10, 52, 80, 15, "BLE Ver.:");
@@ -133,15 +132,15 @@ void modal_bleinfo_update(uint8_t ble_ver, uint16_t comp_id, uint16_t sw_ver)
   ble_company_id_t *vendor = ble_get_company_info(comp_id);
 
   /* Hide spinner. */
-  widget_set_visible(&wait_spinner, WIDGET_HIDDEN);
+  widget_set_visible(WIDGET(&wait_spinner), WIDGET_HIDDEN);
 
   /* Show all labels, set spinner visible. */
-  widget_set_visible(&ble_ver_lbl, WIDGET_SHOW);
-  widget_set_visible(&ble_ver_value_lbl, WIDGET_SHOW);
-  widget_set_visible(&ble_vendor_lbl, WIDGET_SHOW);
-  widget_set_visible(&ble_vendor_value_lbl, WIDGET_SHOW);
-  widget_set_visible(&ble_software_lbl, WIDGET_SHOW);
-  widget_set_visible(&ble_software_value_lbl, WIDGET_SHOW);
+  widget_set_visible(WIDGET(&ble_ver_lbl), WIDGET_SHOW);
+  widget_set_visible(WIDGET(&ble_ver_value_lbl), WIDGET_SHOW);
+  widget_set_visible(WIDGET(&ble_vendor_lbl), WIDGET_SHOW);
+  widget_set_visible(WIDGET(&ble_vendor_value_lbl), WIDGET_SHOW);
+  widget_set_visible(WIDGET(&ble_software_lbl), WIDGET_SHOW);
+  widget_set_visible(WIDGET(&ble_software_value_lbl), WIDGET_SHOW);
 
   if (version != NULL)
   {
@@ -168,13 +167,13 @@ void modal_bleinfo_clear(void)
 void modal_bleinfo_wait(void)
 {
   /* Hide all labels, set spinner visible. */
-  widget_set_visible(&ble_ver_lbl, WIDGET_HIDDEN);
-  widget_set_visible(&ble_ver_value_lbl, WIDGET_HIDDEN);
-  widget_set_visible(&ble_vendor_lbl, WIDGET_HIDDEN);
-  widget_set_visible(&ble_vendor_value_lbl, WIDGET_HIDDEN);
-  widget_set_visible(&ble_software_lbl, WIDGET_HIDDEN);
-  widget_set_visible(&ble_software_value_lbl, WIDGET_HIDDEN);
+  widget_set_visible(WIDGET(&ble_ver_lbl), WIDGET_HIDDEN);
+  widget_set_visible(WIDGET(&ble_ver_value_lbl), WIDGET_HIDDEN);
+  widget_set_visible(WIDGET(&ble_vendor_lbl), WIDGET_HIDDEN);
+  widget_set_visible(WIDGET(&ble_vendor_value_lbl), WIDGET_HIDDEN);
+  widget_set_visible(WIDGET(&ble_software_lbl), WIDGET_HIDDEN);
+  widget_set_visible(WIDGET(&ble_software_value_lbl), WIDGET_HIDDEN);
 
   /* Show spinner. */
-  widget_set_visible(&wait_spinner, WIDGET_SHOW);
+  widget_set_visible(WIDGET(&wait_spinner), WIDGET_SHOW);
 }

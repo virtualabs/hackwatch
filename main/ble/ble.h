@@ -26,8 +26,8 @@
 
 typedef struct {
   uint16_t id;
-  const char *psz_name;
-  const char *psz_short_name;
+  char *psz_name;
+  char *psz_short_name;
 } ble_company_id_t;
 
 typedef enum {

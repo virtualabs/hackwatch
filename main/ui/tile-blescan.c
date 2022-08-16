@@ -86,7 +86,6 @@ int blescan_widget_listitem_event_handler(widget_t *p_widget, widget_event_t eve
 int blescan_widget_listitem_drawfunc(widget_t *p_widget)
 {
   char bdaddr[18];
-  char channel[4];
 
   blescan_widget_listitem_t *p_listitem = (blescan_widget_listitem_t *)p_widget->p_user_data;
 
@@ -309,8 +308,6 @@ int ble_scanner_tile_event_handler(tile_t *p_tile, tile_event_t event, int x, in
 
 int blescan_widget_list_event_handler(widget_t *p_widget, widget_event_t event, int x, int  y, int velocity)
 {
-  int index, i;
-  ble_device_t *device;
   bool b_processed = false;
   widget_listbox_t *p_listbox = (widget_listbox_t *)p_widget;
   blescan_widget_listitem_t *p_listitem;
@@ -368,7 +365,6 @@ void on_device_event(void *event_handler_arg, esp_event_base_t event_base, int32
 {
   int i;
   ble_device_t *peer;
-  char psz_label[18];
   ble_device_version_t *p_version = NULL;
 
   switch (event_id)

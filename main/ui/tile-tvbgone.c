@@ -467,7 +467,7 @@ void tvbgone()
           continue;
         }
         ESP_LOGI(TVBGONE_TAG, "Frequency %d", freq);
-        rmtlib_raw_send(freq, &codes2_eu[code_offset], code_size);
+        rmtlib_raw_send(freq, (int *)&codes2_eu[code_offset], code_size);
 
         vTaskDelay(130/portTICK_PERIOD_MS);
     }
