@@ -21,7 +21,7 @@ Well, it is basically an ESP32-based smartwatch with:
 How to build this project
 -------------------------
 
- * Get Espressif's ESP-IDF framework and install it (following the instructions at https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/)
+ * Get Espressif's ESP-IDF framework (version 4.4.2) and install it (following the instructions at https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/)
  * type `idf.py build` or `idf.py -p <your USB port> flash` to build this project or/and flash your smartwatch
 
 
