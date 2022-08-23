@@ -11,6 +11,8 @@ uint8_t g_current_ble_version;
 uint16_t g_current_comp_id;
 uint16_t g_current_sw_version;
 
+extern void modal_bleinfo_update(uint8_t ble_ver, uint16_t comp_id, uint16_t sw_ver);
+
 char *BLE_VERSIONS[] = {
   "4.0",  /* Starting at version 6. */
   "4.1",
@@ -391,7 +393,7 @@ ble_device_type_t ble_adv_classify(uint8_t *p_adv_data, int adv_length)
 }
 
 
-int on_ble_gap_event(struct ble_gap_event *event, void *arg)
+int IRAM_ATTR on_ble_gap_event(struct ble_gap_event *event, void *arg)
 {
   int i,j;
   bool b_device_known = false;
@@ -408,13 +410,21 @@ int on_ble_gap_event(struct ble_gap_event *event, void *arg)
             g_ble_ctrl.b_connected = true;
             printf("conn handle: %d\n", g_ble_ctrl.conn_handle);
 
-            /* Send VERSION_IND PDU. */
-            _llc_llcp_version_ind_pdu_send(g_ble_ctrl.conn_handle);
+            uint8_t pdu[] = {0x0C, 0x08, 0x00, 0x00, 0x00, 0x00};
 
-            //uint8_t pdu[] = {0x0C\x08\x00\x00\x00\x00};
-            //send_control_pdu(g_ble_ctrl.conn_handle, pdu, 6);
-            //uint8_t pdu[] = {0x0C\x08\x00\x00\x00\x00};
-            //rom_llc_llcp_send(g_ble_ctrl.conn_handle, pdu, pdu[0]);
+            /* Erase version info. */
+            g_ble_ctrl.version_ble = 0;
+            g_ble_ctrl.version_compid = 0;
+            g_ble_ctrl.version_soft = 0;
+
+            /* Send VERSION_IND PDU. */
+            send_raw_data_pdu(
+              g_ble_ctrl.conn_handle,
+              0x03,
+              pdu, // VERSION_IND PDU
+              6,
+              true
+            );
 
             /* Connection successfully established. */
             ESP_LOGI(TAG, "Connection established, VERSION_IND sent !");
@@ -657,7 +667,7 @@ esp_err_t ble_ctrl_event_handler_register(
   );
 }
 
-int on_llcp_pdu_handler(uint8_t *p_pdu, int length)
+int on_llcp_pdu_handler(uint16_t header, uint8_t *p_pdu, int length)
 {
   uint8_t ble_version;
   uint16_t *comp_id;
@@ -673,16 +683,14 @@ int on_llcp_pdu_handler(uint8_t *p_pdu, int length)
     fw_version = (uint16_t *)&p_pdu[4];
     esp_rom_printf("Target version: BLE(%d), Company(%04x), Fw(%04x)\r\n", ble_version, *comp_id, *fw_version);
 
-    /* Allocate a new ble_device_version_t structure. */
-    p_dev_version = (ble_device_version_t *)malloc(sizeof(ble_device_version_t));
-    if (p_dev_version != NULL)
-    {
-      p_dev_version->ble = ble_version;
-      p_dev_version->company = *comp_id;
-      p_dev_version->software = *fw_version;
+    /* Keep track of version info. */
+    g_ble_ctrl.version_ble = ble_version;
+    g_ble_ctrl.version_compid = (uint16_t)(*comp_id);
+    g_ble_ctrl.version_soft = (uint16_t)(*fw_version);
 
+      #if 0
       ble_enter_critical_section();
-
+      
       /* Post a BLE_DEVICE_VERSION event. */
       esp_event_post_to(
         g_ble_ctrl.evt_loop_handle,
@@ -692,9 +700,9 @@ int on_llcp_pdu_handler(uint8_t *p_pdu, int length)
         sizeof(ble_device_version_t),
         portMAX_DELAY
       );
-
+      
       ble_leave_critical_section();
-    }
+      #endif
     return HOOK_BLOCK;
   }
   else
@@ -948,4 +956,21 @@ ble_device_t *ble_get_device(int index)
   {
     return NULL;
   }
+}
+
+
+
+uint8_t ble_device_get_version(void)
+{
+  return g_ble_ctrl.version_ble;
+}
+
+uint16_t ble_device_get_compid(void)
+{
+  return g_ble_ctrl.version_compid;
+}
+
+uint16_t ble_device_get_soft(void)
+{
+  return g_ble_ctrl.version_soft;
 }

@@ -17,6 +17,7 @@
 #define LLC_ENV_ADDR              (0x3ffb96d0)
 #define IP_FUNCS_ARRAY_ADDR       (0x3ffae70c)
 #define BLE_RX_BUFFER_ADDR        (0x3ffb0000)
+#define BLE_RX_PKT_STATUS         (0x3ffb094a)
 #define BLE_RX_PKT_HDR_ADDR       (0x3ffb094c)
 #define BLE_RX_CUR_FIFO_ADDR      (0x3ffb8d74)
 #define BLE_RX_DESC_ADDR          (0x3ffb0950)
@@ -273,7 +274,7 @@ struct llcp_pdu_tag
     /// List element for chaining
     struct co_list_hdr hdr;
     /// Node index
-    uint16_t idx;
+    uint32_t idx;
     /// Pointer on the pdu to send
     void *ptr;
     uint16_t pdu_length;
@@ -542,7 +543,7 @@ typedef struct {
   uint8_t *data;
 } llcp_tester_send_params;
 
-typedef int (*FBLEHACK_IsrCallback)(uint8_t *p_pdu, int length);
+typedef int (*FBLEHACK_IsrCallback)(uint16_t header, uint8_t *p_pdu, int length);
 typedef int (*FBLEHACK_CtlCallback)(llcp_opinfo *p_llcp_pdu);
 typedef int (*F_rom_llc_llcp_send)(int conhdl, uint8_t *p_pdu, uint8_t opcode);
 
@@ -551,13 +552,16 @@ int esp_rom_printf( const char *restrict format, ... );
 
 /* Install hooks. */
 void ble_hack_install_hooks(void);
+void disconnect_nimble(void);
 
 void ble_hack_rx_control_pdu_handler(FBLEHACK_IsrCallback pfn_control_callback);
 void ble_hack_rx_data_pdu_handler(FBLEHACK_IsrCallback pfn_data_callback);
 void ble_hack_tx_control_pdu_handler(FBLEHACK_CtlCallback pfn_control_callback);
+void ble_hack_tx_data_pdu_handler(FBLEHACK_IsrCallback pfn_data_callback);
 
 /* Send a data PDU. */
 void send_data_pdu(int conhdl, void *p_pdu, int length);
+void send_raw_data_pdu(int conhdl, uint8_t llid, void *p_pdu, int length, bool can_be_freed);
 
 /* Send a control PDU. */
 void send_control_pdu(int conhdl, uint8_t *p_pdu, int length);

@@ -102,6 +102,11 @@ typedef struct tBleController {
   uint16_t conn_handle;
   bool b_connected;
 
+  /* Version info. */
+  uint8_t version_ble;
+  uint16_t version_compid;
+  uint16_t version_soft;
+
 } ble_controller_t;
 
 /* Helpers. */
@@ -124,6 +129,11 @@ esp_err_t ble_ctrl_event_handler_register(
   esp_event_handler_t event_handler,
   void* event_handler_arg
 );
+
+uint8_t ble_device_get_version(void);
+uint16_t ble_device_get_compid(void);
+uint16_t ble_device_get_soft(void);
+
 void ble_enter_critical_section(void);
 void ble_leave_critical_section(void);
 

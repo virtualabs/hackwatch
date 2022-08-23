@@ -404,8 +404,11 @@ void on_device_event(void *event_handler_arg, esp_event_base_t event_base, int32
 
     case BLE_DEVICE_DISCONNECTED:
       {
-        /* Hide modal. */
-        ui_unset_modal();
+        if (ble_device_get_version() == 0)
+        {
+          /* Hide modal. */
+          ui_unset_modal();
+        }
       }
       break;
 

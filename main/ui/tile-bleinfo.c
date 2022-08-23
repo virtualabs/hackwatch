@@ -13,10 +13,16 @@ static widget_frame_t frame;
 static char software_version[8];
 static char bd_address[18];
 
+FDrawTile pfn_orig_draw_func = NULL;
+bool b_info_found = false;
+
 int close_modal(widget_t *p_widget)
 {
   int res;
   ESP_LOGI(TAG, "Disconnecting from device");
+
+  /* Reset state. */
+  b_info_found = false;
 
   /* Disconnect. */
   res = ble_disconnect();
@@ -26,6 +32,30 @@ int close_modal(widget_t *p_widget)
   ui_unset_modal();
   
   return 0;
+}
+
+void bleinfo_poll_status(void)
+{
+  uint8_t ble_version = 0;
+  uint16_t ble_compid, ble_soft;
+
+  ble_enter_critical_section();
+  ble_version = ble_device_get_version();
+  if (ble_version > 0)
+  {
+    ble_compid = ble_device_get_compid();
+    ble_soft = ble_device_get_soft();
+    b_info_found = true;
+    modal_bleinfo_update(ble_version, ble_compid, ble_soft);
+  }
+  ble_leave_critical_section();
+}
+
+int bleinfo_draw_func(tile_t *tile)
+{
+  if (!b_info_found)
+    bleinfo_poll_status();
+  return pfn_orig_draw_func(tile);
 }
 
 int bleinfo_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int velocity)
@@ -56,6 +86,13 @@ modal_t *modal_bleinfo_init(void)
 
   /* Set our own event handler. */
   tile_set_event_handler(&bleinfo_modal.tile, bleinfo_event_handler);
+
+  /* Hook modal drawing function. */
+  pfn_orig_draw_func = ((tile_t *)&bleinfo_modal)->pfn_draw_tile;
+  if (pfn_orig_draw_func != bleinfo_draw_func)
+  {
+    tile_set_drawfunc((tile_t *)&bleinfo_modal.tile, bleinfo_draw_func);
+  }
 
   /* Add labels. */
   widget_label_init(&title_lbl, &bleinfo_modal.tile, 10, 5, 230, 45, "");
@@ -166,6 +203,9 @@ void modal_bleinfo_clear(void)
 
 void modal_bleinfo_wait(void)
 {
+  /* Reset polling state. */
+  b_info_found = false;
+
   /* Hide all labels, set spinner visible. */
   widget_set_visible(WIDGET(&ble_ver_lbl), WIDGET_HIDDEN);
   widget_set_visible(WIDGET(&ble_ver_value_lbl), WIDGET_HIDDEN);
