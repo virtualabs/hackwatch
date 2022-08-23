@@ -35,7 +35,6 @@
 #endif
 
 #include "img/settings_icon_8bpp.h"
-/* #include "img/bluetooth_icon.h" */
 
 
 void main_ui(void *parameter)
