@@ -21,10 +21,10 @@ T-Watch 2020 v1 has:
  * an embedded real-time clock (obviously, it's a watch !)
 
 T-Watch 2020 v2 is a bit diferent:
- * Max98357a I2S amplifier removed
- * DVR2605L haptip vibration contoler 
- * L76K GPS
- * TF Card Holder
+ * remove Max98357a I2S amplifier
+ * add DVR2605L haptic vibration contoler 
+ * add L76K GPS
+ * add TF Card Holder
 
 T-Watch 2020 v3 is very similar to v1 but add:
  * PDM microphone
