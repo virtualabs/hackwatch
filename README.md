@@ -49,16 +49,18 @@ Clone the main repo:
    cd hackwatch/
    git submodule update --init --recursive```
 
+
 Customize feature and select T-Watch 2020 version:
-* `idf.py menuconfig`
-* To decide what feature (Wifi, BLE and/or IR):
-  * Choose `HackWatch menu`
-* To select your T-Watch version:
-  * Choose `Component config`
-  * Go at the very bottom and pick `T-Watch Lib`
-  * Select `Target T-Watch version` to choose between `T-Watch 2020 v1`, `v2` or `v3`
-  * (S)ave and quit
- 
+  * `idf.py menuconfig`
+  * To decide what feature (Wifi, BLE and/or IR):
+    * Choose `HackWatch menu`
+  * To select your T-Watch version:
+    * Choose `Component config`
+    * Go at the very bottom and pick `T-Watch Lib`
+    * Select `Target T-Watch version` to choose between `T-Watch 2020 v1`, `v2` or `v3`
+    * (S)ave and quit
+
+
 Compile and Flash your watch:
- * type `idf.py build` to build this project
- * type `idf.py -p <your USB port> flash` to also flash your smartwatch
+  * type `idf.py build` to build this project
+  * type `idf.py -p <your USB port> flash` to also flash your smartwatch
