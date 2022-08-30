@@ -42,7 +42,7 @@ cd esp-idf/
 ./install.sh esp32
 . ./export.sh 
 idf.py --version```
- 
+
 Clone the main repo:
 * `git clone https://github.com/virtualabs/hackwatch`
 * `cd hackwatch/`
