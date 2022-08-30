@@ -99,7 +99,7 @@ int blescan_widget_listitem_drawfunc(widget_t *p_widget)
         1,
         1 + BLESCAN_LISTITEM_OFFY,
         p_widget->box.width - 2,
-        p_widget->box.height - 2,
+        p_widget->box.height - 2 - BLESCAN_LISTITEM_OFFY,
         p_widget->style.background
       );
 
