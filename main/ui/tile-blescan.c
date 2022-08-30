@@ -444,6 +444,12 @@ tile_t *tile_blescan_init(void)
   /* Initialize our listbox. */
   widget_listbox_init(&lb_devices, &blescan_tile, 3, 45, 234, 190);
 
+  /* Set listbox border color. */
+  widget_set_border_color(&lb_devices.widget, RGB(0x1, 0x2, 0x3));
+  
+  /* Set listbox's scrollbar border color. */
+  widget_set_border_color(&lb_devices.scrollbar.widget, RGB(0x1, 0x2, 0x3));
+
   /* Set default event handler. */
   pfn_lb_event_handler = widget_set_eventhandler(&lb_devices.widget, blescan_widget_list_event_handler);
   
