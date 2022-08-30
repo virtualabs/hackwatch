@@ -2,8 +2,8 @@
 #define __INC_WIFI_AP_H
 
 #define WIFI_APLIST_MAX_NUMBER  10
-#define WIFI_AP_FRESHNESS_MAX   255
-#define WIFI_AP_FRESHNESS_OLD   100
+#define WIFI_AP_FRESHNESS_MAX   20
+#define WIFI_AP_FRESHNESS_OLD   5
 
 #include "esp_wifi.h"
 
