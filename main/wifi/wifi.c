@@ -17,8 +17,6 @@ typedef struct {
 	uint8_t payload[0]; /* network data ended with 4 bytes csum (CRC32) */
 } wifi_ieee80211_packet_t;
 
-void wifi_scanner_task(void *parameter);
-
 
 /***************************************************
  * 802.11 raw packet send feature
@@ -188,7 +186,6 @@ void wifi_rogueap_enable(void)
   rogue_ap_config.ap.channel = g_wifi_ctrl.p_rogueap_target->channel;
 
   /* Copy authmode if not WEP. */
-  //rogue_ap_config.ap.authmode = g_wifi_ctrl.p_rogueap_target->auth_mode;
   rogue_ap_config.ap.authmode = WIFI_AUTH_OPEN;
   
   if (rogue_ap_config.ap.authmode != WIFI_AUTH_OPEN)
@@ -215,9 +212,6 @@ void wifi_rogueap_enable(void)
   /* Mark WiFi as enabled. */
   if (!g_wifi_ctrl.b_enabled)
     g_wifi_ctrl.b_enabled = true;
-
-  /* Start scanner. */
-  //xTaskCreate(wifi_fakeap_task, "wifi_fakeap", 10000, NULL, 1, &g_wifi_ctrl.current_task_handle);
 }
 
 /******************************************************************
@@ -283,12 +277,14 @@ void wifi_fakeap_task(void *parameter)
   beacon_packet_size = i;
 
   /* Dump packet. */
+  #if 0
   printf("RogueAP beacon: ");
   for (i=0; i<beacon_packet_size; i++)
   {
     printf("%02x ", beacon_packet[i]);
   }
   printf("\r\n");
+  #endif
  
   /* Loop and send packet. */
   while (1)
@@ -384,47 +380,6 @@ void wifi_sniffer_packet_cb(void* buff, wifi_promiscuous_pkt_type_t type)
   {
     g_wifi_ctrl.pfn_on_packet_received(ppkt);
   }
-
-#if 0
-  uint8_t pkt_type, pkt_subtype;
-  uint8_t dest[6], source[6], bssid[6];
-  char essid[32];
-  uint8_t *p_essid_tlv;
-  int essid_size;
-
-  const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff;
-  const wifi_ieee80211_packet_t *ipkt = (wifi_ieee80211_packet_t *)ppkt->payload;
-  const wifi_ieee80211_mac_hdr_t *hdr = &ipkt->hdr;
-
-  /* Display information only about probe request. */
-  if (wifi_pkt_get_type(ppkt->payload, &psubtype) == ESP_OK)
-  {
-    switch(psubtype)
-    {
-      case PKT_PROBE_REQ:
-        {
-          if (wifi_pkt_parse_probe_req(ppkt->payload, (wifi_probe_req_t *)&probe_req) == ESP_OK)
-          {
-            printf("[PROBE_REQ] ESSID: %s\r\n", probe_req.essid);
-          }
-        }
-        break;
-
-      case PKT_PROBE_RSP:
-        {
-          if (wifi_pkt_parse_probe_rsp(ppkt->payload, (wifi_probe_rsp_t *)&probe_rsp) == ESP_OK)
-          {
-            printf("[PROBE_RSP] ESSID: %s\r\n", probe_rsp.essid);
-          }
-        }
-        break;
-
-      default:
-        break;
-
-    }
-  }
-#endif
 }
 
 
@@ -606,7 +561,6 @@ void wifi_scanner_enable(void)
   g_wifi_ctrl.scan_config.scan_time.passive = 500;
 
   /* Start scanner. */
-  //xTaskCreate(wifi_scanner_task, "wifi_scanner", 10000, NULL, 1, &g_wifi_ctrl.current_task_handle);
   esp_wifi_scan_start(&g_wifi_ctrl.scan_config, false);
   g_wifi_ctrl.scan_state = SCANNER_RUNNING;
 }
@@ -654,83 +608,6 @@ static void wifi_scanner_event_handler(void* arg, esp_event_base_t event_base, i
     
     esp_wifi_scan_start(&g_wifi_ctrl.scan_config, false);
     g_wifi_ctrl.scan_state = SCANNER_RUNNING;
-  }
-}
-
-/**
- * wifi_scanner_task()
- * 
- * @brief: Scanner main task
- **/
-
-void wifi_scanner_task(void *parameter)
-{
-  wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE];
-  uint16_t ap_count = 0;
-  int j;
-
-  ESP_LOGI(TAG, "scanner task starting ...");
-
-  g_wifi_ctrl.scan_state = SCANNER_IDLE;
-
-  if (!g_wifi_ctrl.evt_loop_initialized)
-  {
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_event_handler_instance_t instance_any_id;
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(
-      WIFI_EVENT,
-      ESP_EVENT_ANY_ID,
-      &wifi_scanner_event_handler,
-      NULL,
-      &instance_any_id
-    ));
-
-    /* Mark event loop as initialized. */
-    g_wifi_ctrl.evt_loop_initialized = true;
-  }
-
-  while (1)
-  {
-    vTaskDelay(1);
-
-    ESP_LOGD(TAG, "wifi scan started ...");
-    
-    #if 0
-    if (g_wifi_ctrl.scan_state == SCANNER_IDLE)
-    {
-      esp_wifi_scan_start(&g_wifi_ctrl.scan_config, false);
-      g_wifi_ctrl.scan_state = SCANNER_RUNNING;
-    }
-
-    /* Get APs */
-    ap_count = DEFAULT_SCAN_LIST_SIZE;
-    if (esp_wifi_scan_get_ap_records(&ap_count, ap_info) == ESP_OK)
-    {
-      ESP_LOGI(TAG, "got APs (%d), parse ...", ap_count);
-      
-      /* Update APs. */
-      for (j=0; j<ap_count; j++)
-      {
-        ESP_LOGI(TAG, "Found AP '%s'", ap_info[j].ssid);
-        wifi_aplist_add(&g_wifi_ctrl.ap_list, &ap_info[j]);
-      }
-
-      if (ap_count > 0)
-      {
-        /* Post a WIFI_SCANNER_EVENT_APLIST_UPDATED event. */
-        ESP_LOGI(TAG, "Sending WIFI_SCANNER_EVENT_APLIST_UPDATED event ...");
-        esp_event_post_to(
-          g_wifi_ctrl.evt_loop_handle,
-          WIFI_CTRL_EVENT,
-          WIFI_SCANNER_EVENT_APLIST_UPDATED,
-          &g_wifi_ctrl.ap_list,
-          sizeof(wifi_aplist_t *),
-          portMAX_DELAY /* <-- TODO: waiting for max delay can block this task. */
-        );
-        ESP_LOGI(TAG, "WIFI_SCANNER_EVENT_APLIST_UPDATED event sent.");
-      }
-    }
-    #endif
   }
 }
 
@@ -796,12 +673,6 @@ void wifi_ctrl_init(void)
   wifiInitializationConfig.nvs_enable = false;
   ESP_ERROR_CHECK(esp_wifi_init(&wifiInitializationConfig));
   ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-
-  #if 0 /* Eats up 1kB of RAM :X */
-  /* Load ESP NETIF stack. */
-  ESP_ERROR_CHECK(esp_netif_init());
-  esp_netif_create_default_wifi_ap();
-  #endif
 
   /* Initialize our event loop. */
   g_wifi_ctrl.evt_loop_args.queue_size = 5;
