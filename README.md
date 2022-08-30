@@ -42,7 +42,14 @@ Install the Espressif SDK:
    * `./install.sh esp32`
    * `. ./export.sh`
    * `idf.py --version`
- * Verify the output of `idf.py --version`, it should 4.4.2
+ * Verify the output, it should be 4.4.2
+   ```mkdir -p ~/esp
+   cd ~/esp
+   git clone --recursive -b v4.4.2 https://github.com/espressif/esp-idf.git
+   cd esp-idf/
+   ./install.sh esp32
+   . ./export.sh
+   idf.py --version```
 
 Clone the main repo:
 * `git clone https://github.com/virtualabs/hackwatch`
