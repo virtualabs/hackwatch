@@ -196,7 +196,7 @@ static void wscan_aplist_update_handler(void* arg, esp_event_base_t event_base, 
   {
     do
     {
-      ESP_LOGI(
+      ESP_LOGD(
         TAG,
         "AP: [%02x:%02x:%02x:%02x:%02x:%02x] %s (%d) frsh:%d",
         p_ap_record->bssid[0],
@@ -231,7 +231,7 @@ static void wscan_aplist_update_handler(void* arg, esp_event_base_t event_base, 
   {
     for (i=list_nb_aps; i<p_wifiscan->nb_aps; i++)
     {
-      ESP_LOGI(TAG, "Remove item %s", p_wifiscan->aps[i].p_ap->essid);
+      ESP_LOGD(TAG, "Remove item %s", p_wifiscan->aps[i].p_ap->essid);
       widget_listbox_remove(&p_wifiscan->listbox, (widget_t *)&p_wifiscan->aps[i]);
     }
 

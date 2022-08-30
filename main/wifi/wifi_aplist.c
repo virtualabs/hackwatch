@@ -18,7 +18,7 @@ void wifi_aplist_init(wifi_aplist_t *p_list)
   p_list->count = 0;
   p_list->p_first = NULL;
 
-  ESP_LOGI(TAG, "list initialized");
+  ESP_LOGD(TAG, "list initialized");
 }
 
 
@@ -31,7 +31,7 @@ void wifi_aplist_clean(wifi_aplist_t *p_list)
   wifi_ap_t *p_item;
   wifi_ap_t *p_previous;
   
-  ESP_LOGI(TAG, "Clean list");
+  ESP_LOGD(TAG, "Clean list");
 
   p_previous = NULL;
   p_item = p_list->p_first;
@@ -41,7 +41,7 @@ void wifi_aplist_clean(wifi_aplist_t *p_list)
     p_item->freshness--;
     if (p_item->freshness < WIFI_AP_FRESHNESS_OLD)
     {
-      ESP_LOGI(TAG, "%s is not so fresh, removing it", p_item->essid);
+      ESP_LOGD(TAG, "%s is not so fresh, removing it", p_item->essid);
 
       /* Remove item */
       if (p_previous == NULL)
@@ -70,7 +70,7 @@ void wifi_aplist_clean(wifi_aplist_t *p_list)
     }
     else
     {
-      ESP_LOGI(TAG, "%s is fresh enough", p_item->essid);
+      ESP_LOGD(TAG, "%s is fresh enough", p_item->essid);
 
       /* Keep previous up-to-date. */
       p_previous = p_item;
@@ -135,11 +135,11 @@ void wifi_aplist_add(wifi_aplist_t *p_list, wifi_ap_record_t *ap)
 
   if (p_list->count == 0)
   {
-    ESP_LOGI(TAG, "list is empty, allocating item");
+    ESP_LOGD(TAG, "list is empty, allocating item");
     p_item = wifi_aplist_alloc_item(ap);
     if (p_item != NULL)
     {
-      ESP_LOGI(TAG, "saving item to list");
+      ESP_LOGD(TAG, "saving item to list");
       /* Save item. */
       p_list->p_first = p_item;
       p_list->count++;
@@ -181,7 +181,7 @@ void wifi_aplist_add(wifi_aplist_t *p_list, wifi_ap_record_t *ap)
         p_item = p_item->p_next;
     }
 
-    ESP_LOGI(TAG, "ap not found, inserting info into our list");
+    ESP_LOGD(TAG, "ap not found, inserting info into our list");
 
     /* Add AP if there is some space left. */
     if (p_list->count < WIFI_APLIST_MAX_NUMBER)

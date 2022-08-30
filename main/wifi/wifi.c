@@ -565,14 +565,21 @@ void wifi_deauth_enable(void)
 
 void wifi_scanner_disable(void)
 {
-  /* Stop scanner. */
-  esp_wifi_scan_stop();
-
-  /* Stop WiFi. */
-  wifi_disable();
 
   /* Stop our scanner task. */
-  vTaskDelete(g_wifi_ctrl.current_task_handle);
+  //ESP_LOGI(TAG, "Stopping scanner task ...");
+  //vTaskDelete(g_wifi_ctrl.current_task_handle);
+  //ESP_LOGI(TAG, "Scanner task stopped ...");
+
+  /* Stop scanner. */
+  ESP_LOGI(TAG, "Stopping ESP STA scanner (esp_wifi_scan_stop()) ...");
+  ESP_ERROR_CHECK(esp_wifi_scan_stop());
+  ESP_LOGI(TAG, "ESP STA scanner stopped ...");
+
+  /* Stop WiFi. */
+  ESP_LOGI(TAG, "Disabling WiFi ...");
+  wifi_disable();
+  ESP_LOGI(TAG, "WiFi disabled ...");
 }
 
 
@@ -599,16 +606,54 @@ void wifi_scanner_enable(void)
   g_wifi_ctrl.scan_config.scan_time.passive = 500;
 
   /* Start scanner. */
-  xTaskCreate(wifi_scanner_task, "wifi_scanner", 10000, NULL, 1, &g_wifi_ctrl.current_task_handle);
+  //xTaskCreate(wifi_scanner_task, "wifi_scanner", 10000, NULL, 1, &g_wifi_ctrl.current_task_handle);
+  esp_wifi_scan_start(&g_wifi_ctrl.scan_config, false);
+  g_wifi_ctrl.scan_state = SCANNER_RUNNING;
 }
 
 
 static void wifi_scanner_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
+  wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE];
+  uint16_t ap_count;
+  int j;
+
   if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_SCAN_DONE)
   {
     ESP_LOGI(TAG, "wifi scan done");
     g_wifi_ctrl.scan_state = SCANNER_IDLE;
+
+    /* Get APs */
+    ap_count = DEFAULT_SCAN_LIST_SIZE;
+    if (esp_wifi_scan_get_ap_records(&ap_count, ap_info) == ESP_OK)
+    {
+      ESP_LOGI(TAG, "got APs (%d), parse ...", ap_count);
+      
+      /* Update APs. */
+      for (j=0; j<ap_count; j++)
+      {
+        ESP_LOGI(TAG, "Found AP '%s'", ap_info[j].ssid);
+        wifi_aplist_add(&g_wifi_ctrl.ap_list, &ap_info[j]);
+      }
+
+      if (ap_count > 0)
+      {
+        /* Post a WIFI_SCANNER_EVENT_APLIST_UPDATED event. */
+        ESP_LOGI(TAG, "Sending WIFI_SCANNER_EVENT_APLIST_UPDATED event ...");
+        esp_event_post_to(
+          g_wifi_ctrl.evt_loop_handle,
+          WIFI_CTRL_EVENT,
+          WIFI_SCANNER_EVENT_APLIST_UPDATED,
+          &g_wifi_ctrl.ap_list,
+          sizeof(wifi_aplist_t *),
+          portMAX_DELAY /* <-- TODO: waiting for max delay can block this task. */
+        );
+        ESP_LOGI(TAG, "WIFI_SCANNER_EVENT_APLIST_UPDATED event sent.");
+      }
+    }
+    
+    esp_wifi_scan_start(&g_wifi_ctrl.scan_config, false);
+    g_wifi_ctrl.scan_state = SCANNER_RUNNING;
   }
 }
 
@@ -646,8 +691,11 @@ void wifi_scanner_task(void *parameter)
 
   while (1)
   {
-    ESP_LOGD(TAG, "wifi scan started ...");
+    vTaskDelay(1);
 
+    ESP_LOGD(TAG, "wifi scan started ...");
+    
+    #if 0
     if (g_wifi_ctrl.scan_state == SCANNER_IDLE)
     {
       esp_wifi_scan_start(&g_wifi_ctrl.scan_config, false);
@@ -658,7 +706,7 @@ void wifi_scanner_task(void *parameter)
     ap_count = DEFAULT_SCAN_LIST_SIZE;
     if (esp_wifi_scan_get_ap_records(&ap_count, ap_info) == ESP_OK)
     {
-      ESP_LOGD(TAG, "got APs, parse ...");
+      ESP_LOGI(TAG, "got APs (%d), parse ...", ap_count);
       
       /* Update APs. */
       for (j=0; j<ap_count; j++)
@@ -670,6 +718,7 @@ void wifi_scanner_task(void *parameter)
       if (ap_count > 0)
       {
         /* Post a WIFI_SCANNER_EVENT_APLIST_UPDATED event. */
+        ESP_LOGI(TAG, "Sending WIFI_SCANNER_EVENT_APLIST_UPDATED event ...");
         esp_event_post_to(
           g_wifi_ctrl.evt_loop_handle,
           WIFI_CTRL_EVENT,
@@ -678,10 +727,10 @@ void wifi_scanner_task(void *parameter)
           sizeof(wifi_aplist_t *),
           portMAX_DELAY /* <-- TODO: waiting for max delay can block this task. */
         );
+        ESP_LOGI(TAG, "WIFI_SCANNER_EVENT_APLIST_UPDATED event sent.");
       }
     }
-
-    vTaskDelay(1);
+    #endif
   }
 }
 
@@ -772,6 +821,17 @@ void wifi_ctrl_init(void)
   }
   else
     ESP_LOGE(TAG, "cannot create event loop for wifi controller.");
+
+  /* Initialize scanner event loop. */
+  ESP_ERROR_CHECK(esp_event_loop_create_default());
+  esp_event_handler_instance_t instance_any_id;
+  ESP_ERROR_CHECK(esp_event_handler_instance_register(
+    WIFI_EVENT,
+    ESP_EVENT_ANY_ID,
+    &wifi_scanner_event_handler,
+    NULL,
+    &instance_any_id
+  ));
 }
 
 /**
@@ -797,12 +857,16 @@ void wifi_set_sniffer_handler(FWifiPacketReceivedCb callback)
 
 void wifi_set_mode(wifi_controller_mode_t mode)
 {
+  int old_mode;
+
   /* Sanity check */
   if (wifi_get_mode() == mode)
     return;
 
   ESP_LOGI(TAG, "set mode to %d", mode);
   ESP_LOGD(TAG, "disabling old mode (%d) ...", g_wifi_ctrl.mode);
+
+  old_mode = g_wifi_ctrl.mode;
 
   /* Disable old mode if any. */
   switch(g_wifi_ctrl.mode)
