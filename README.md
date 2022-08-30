@@ -34,14 +34,15 @@ How to build this project
 
 Install the Espressif SDK:
  * Get Espressif's ESP-IDF framework (version 4.4.2) and install it (following the instructions at https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/)
- * In the installation of ESP-IDF, make sure you specify `-b v4.4.2` when cloning and verify the output of `idf.py --version`:
-`mkdir -p ~/esp`
-`cd ~/esp`
-`git clone --recursive -b v4.4.2 https://github.com/espressif/esp-idf.git`
-`cd esp-idf/`
-`./install.sh esp32`
-`. ./export.sh`
-`idf.py --version`
+ * In the installation of ESP-IDF, make sure you specify `-b v4.4.2` when cloning
+   * `mkdir -p ~/esp`
+   * `cd ~/esp`
+   * `git clone --recursive -b v4.4.2 https://github.com/espressif/esp-idf.git`
+   * `cd esp-idf/`
+   * `./install.sh esp32`
+   * `. ./export.sh`
+   * `idf.py --version`
+ * Verify the output of `idf.py --version`, it should 4.4.2
 
 Clone the main repo:
 * `git clone https://github.com/virtualabs/hackwatch`
