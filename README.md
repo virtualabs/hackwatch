@@ -35,14 +35,6 @@ How to build this project
 Install the Espressif SDK:
  * Get Espressif's ESP-IDF framework (version 4.4.2) and install it (following the instructions at https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/)
  * In the installation of ESP-IDF, make sure you specify `-b v4.4.2` when cloning
-   * `mkdir -p ~/esp`
-   * `cd ~/esp`
-   * `git clone --recursive -b v4.4.2 https://github.com/espressif/esp-idf.git`
-   * `cd esp-idf/`
-   * `./install.sh esp32`
-   * `. ./export.sh`
-   * `idf.py --version`
- * Verify the output, it should be 4.4.2
    ```mkdir -p ~/esp
    cd ~/esp
    git clone --recursive -b v4.4.2 https://github.com/espressif/esp-idf.git
@@ -50,11 +42,12 @@ Install the Espressif SDK:
    ./install.sh esp32
    . ./export.sh
    idf.py --version```
+ * Verify the output, it should be 4.4.2
 
 Clone the main repo:
-* `git clone https://github.com/virtualabs/hackwatch`
-* `cd hackwatch/`
-* `git submodule update --init --recursive`
+   ```git clone https://github.com/virtualabs/hackwatch
+   cd hackwatch/
+   git submodule update --init --recursive```
 
 Customize feature and select T-Watch 2020 version:
 * `idf.py menuconfig`
@@ -64,6 +57,7 @@ Customize feature and select T-Watch 2020 version:
   * Choose `Component config`
   * Go at the very bottom and pick `T-Watch Lib`
   * Select `Target T-Watch version` to choose between `T-Watch 2020 v1`, `v2` or `v3`
+  * (S)ave and quit
  
 Compile and Flash your watch:
  * type `idf.py build` to build this project
