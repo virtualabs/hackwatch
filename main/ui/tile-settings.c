@@ -2,10 +2,10 @@
 
 static tile_t settings_one_tile, settings_two_tile, settings_three_tile;
 
-/* Time saved confirm modal */
-static modal_t confirm;
-static widget_button_t confirm_btn;
-static widget_label_t confirm_txt;
+/* Time and date saved confirm modal */
+static modal_t confirm, confirm_date;
+static widget_button_t confirm_btn, confirm_date_btn;
+static widget_label_t confirm_txt, confirm_date_txt;
 
 static rtc_datetime_t datetime;
 static widget_label_t lbl_one_title, lbl_two_title, lbl_three_title;
@@ -84,6 +84,24 @@ int date_save_onclick(widget_t *p_widget)
   twatch_rtc_get_date_time(&datetime);
   dateset_get_date(&dateset, &datetime);
   twatch_rtc_set_date_time(&datetime);
+
+  ui_set_modal(&confirm_date);
+
+  /* Success. */
+  return TE_PROCESSED;
+}
+
+
+/**
+ * date_save_confirm()
+ * 
+ * @brief: date save confirm modal handler
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
+
+int date_save_confirm(widget_t *p_widget)
+{
+  ui_unset_modal();
 
   /* Success. */
   return TE_PROCESSED;
@@ -269,6 +287,34 @@ tile_t *tile_settings_two_init(void)
 
   dateset_init(&dateset, &settings_two_tile, 0, 50, datetime.day, datetime.month, datetime.year);
   
+  /* Initialize our modal box (confirm_date). */
+  modal_init(&confirm_date, 20, 80, 200, 120);
+  confirm_date.tile.background_color = RGB(0x1, 0x2, 0x3);
+  widget_button_init(
+    &confirm_date_btn,
+    &confirm_date.tile,
+    50,
+    80,
+    100,
+    30,
+    "OK"
+  );
+  widget_set_bg_color(&confirm_date_btn.widget, RGB(0xe, 0xe, 0xe));
+  widget_set_front_color(&confirm_date_btn.widget, RGB(0, 0, 0));
+
+  widget_button_set_handler(&confirm_date_btn, date_save_confirm);
+  widget_label_init(
+    &confirm_date_txt,
+    &confirm_date.tile,
+    10,
+    5,
+    180,
+    30,
+    "Date saved !"
+  );
+  widget_set_bg_color(&confirm_date_txt.widget, RGB(0x1, 0x2, 0x3));
+  widget_set_front_color(&confirm_date_txt.widget, RGB(0xf, 0xf, 0xf));
+
   /* Initialize our buttons. */
   widget_button_init(&btn_save_date, &settings_two_tile, 15, 190, 210, 45, "Save date");
   widget_set_bg_color(&btn_save_date.widget, RGB(0x1, 0x2, 0x3));
