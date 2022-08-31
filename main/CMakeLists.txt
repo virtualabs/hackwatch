@@ -55,6 +55,10 @@ if (CONFIG_INCLUDE_WIFI)
   if (CONFIG_WIFI_ROGUEAP)
     list( APPEND COMPONENT_SRCS "ui/tile-rogueap.c")
   endif()
+
+  if (CONFIG_WIFI_DEAUTH)
+    list( APPEND COMPONENT_SRCS "ui/tile-deauth.c")
+  endif()
 endif()
 
 

@@ -1,5 +1,5 @@
-#ifndef __INC_HACKWATCH_DEAUTH_H
-#define __INC_HACKWATCH_DEAUTH_H
+#ifndef __INC_HACKWATCH_WIFISCAN_H
+#define __INC_HACKWATCH_WIFISCAN_H
 
 #include "twatch.h"
 #include "ui/ui.h"
@@ -9,4 +9,4 @@
 
 tile_t *tile_scanner_init(void);
 
-#endif /* __INC_HACKWATCH_DEAUTH_H */
+#endif /* __INC_HACKWATCH_WIFISCAN_H */
