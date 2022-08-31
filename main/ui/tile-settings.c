@@ -202,7 +202,7 @@ tile_t *tile_settings_one_init(void)
   tile_set_event_handler(&settings_one_tile, settings_one_tile_event_handler);
 
   /* Initialize our title label. */
-  widget_label_init(&lbl_one_title, &settings_one_tile, 10, 5, 230, 45, "Settings 1/3");
+  widget_label_init(&lbl_one_title, &settings_one_tile, 10, 5, 230, 45, "Time");
 
   timeset_init(&timeset, &settings_one_tile, 0, 60, 0, 0);
 
@@ -210,7 +210,7 @@ tile_t *tile_settings_one_init(void)
   timeset_set_time(&timeset, &datetime);
 
   /* Initialize our modal box (confirm). */
-  modal_init(&confirm, 20, 80, 200, 120);
+  modal_init(&confirm, 20, 50, 200, 120);
   confirm.tile.background_color = RGB(0x1, 0x2, 0x3);
   widget_button_init(
     &confirm_btn,
@@ -221,7 +221,7 @@ tile_t *tile_settings_one_init(void)
     30,
     "OK"
   );
-  widget_set_bg_color(&confirm_btn.widget, RGB(0xe, 0xe, 0xe));
+  widget_set_bg_color(&confirm_btn.widget, RGB(0x3, 0x3, 0x3));
   widget_set_front_color(&confirm_btn.widget, RGB(0, 0, 0));
 
   widget_button_set_handler(&confirm_btn, clock_save_confirm);
@@ -265,7 +265,7 @@ tile_t *tile_settings_two_init(void)
   tile_set_event_handler(&settings_two_tile, settings_two_tile_event_handler);
 
   /* Initialize our title label. */
-  widget_label_init(&lbl_two_title, &settings_two_tile, 10, 5, 230, 45, "Settings 2/3");
+  widget_label_init(&lbl_two_title, &settings_two_tile, 10, 5, 230, 45, "Date");
 
   dateset_init(&dateset, &settings_two_tile, 0, 50, datetime.day, datetime.month, datetime.year);
   
@@ -316,7 +316,7 @@ tile_t *tile_settings_three_init(void)
   tile_init(&settings_three_tile, NULL);
 
   /* Initialize our title label. */
-  widget_label_init(&lbl_three_title, &settings_three_tile, 10, 5, 230, 45, "Settings 3/3");
+  widget_label_init(&lbl_three_title, &settings_three_tile, 10, 5, 230, 45, "Screen");
   
   widget_button_init(&btn_orientation, &settings_three_tile, 15, (240-45)/2, 210, 45, "Rotate screen");
   widget_set_bg_color(&btn_orientation.widget, RGB(0x1, 0x2, 0x3));
