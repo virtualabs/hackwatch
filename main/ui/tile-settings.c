@@ -288,7 +288,7 @@ tile_t *tile_settings_two_init(void)
   dateset_init(&dateset, &settings_two_tile, 0, 50, datetime.day, datetime.month, datetime.year);
   
   /* Initialize our modal box (confirm_date). */
-  modal_init(&confirm_date, 20, 80, 200, 120);
+  modal_init(&confirm_date, 20, 50, 200, 120);
   confirm_date.tile.background_color = RGB(0x1, 0x2, 0x3);
   widget_button_init(
     &confirm_date_btn,
@@ -299,7 +299,7 @@ tile_t *tile_settings_two_init(void)
     30,
     "OK"
   );
-  widget_set_bg_color(&confirm_date_btn.widget, RGB(0xe, 0xe, 0xe));
+  widget_set_bg_color(&confirm_date_btn.widget, RGB(0x3, 0x3, 0x3));
   widget_set_front_color(&confirm_date_btn.widget, RGB(0, 0, 0));
 
   widget_button_set_handler(&confirm_date_btn, date_save_confirm);
