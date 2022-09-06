@@ -8,13 +8,11 @@ static widget_label_t title_lbl, mac_lbl, channel_lbl, security_lbl, rssi_lbl;
 static widget_label_t mac_address, channel, security, rssi;
 static widget_frame_t frame;
 static wifi_ap_t ap_info;
-static widget_button_t deauth_btn;
+static widget_button_t close_btn;
 
 volatile char *psz_mac[18];
 volatile char *psz_channel[4];
 volatile char *psz_rssi[6];
-
-volatile bool deauth_enabled = false;
 
 char *auth_mode[] = {
   "OPEN",
@@ -28,30 +26,9 @@ char *auth_mode[] = {
   "WAPI_PSK"
 };
 
-int deauth_toggle(widget_t *p_widget)
+int close_handler(widget_t *p_widget)
 {
-  if (!deauth_enabled)
-  {
-    /* Set target. */
-    wifi_deauth_target(ap_info.bssid, ap_info.channel);
-
-    /* Change button text. */
-    widget_button_set_text(&deauth_btn, "Stop");
-
-    /* Deauth is on. */
-    deauth_enabled = true;
-  }
-  else
-  {
-    /* Stop deauth. */
-    wifi_set_mode(WIFI_OFF);
-
-    /* Set button text. */
-    widget_button_set_text(&deauth_btn, "Deauth");
-
-    /* Deauth is off. */
-    deauth_enabled = false;
-  }
+  ui_unset_modal();
   return 0;
 }
 
@@ -61,14 +38,6 @@ int apinfo_event_handler(tile_t *p_tile, tile_event_t event, int x, int y, int v
   {
     case TE_EXIT:
       {
-        if (deauth_enabled)
-        {
-          deauth_enabled = false;
-          
-          /* Stop deauth. */
-          //wifi_set_mode(WIFI_SCANNER);
-          //wifi_set_mode(WIFI_OFF);
-        }
       }
       break;
 
@@ -125,10 +94,10 @@ modal_t *modal_apinfo_init(void)
   widget_label_set_fontsize(&rssi, LABEL_FONT_SMALL);
 
   /* Add deauth button. */
-  widget_button_init(&deauth_btn, &apinfo_modal.tile, (240 - 120)/2, 175, 120, 50, "Deauth");
-  widget_set_bg_color(&deauth_btn.widget, RGB(0x1, 0x2, 0x3));
-  widget_set_border_color(&deauth_btn.widget, RGB(0x1, 0x2, 0x3));
-  widget_button_set_handler(&deauth_btn, deauth_toggle);
+  widget_button_init(&close_btn, &apinfo_modal.tile, (240 - 120)/2, 175, 120, 50, "OK");
+  widget_set_bg_color(&close_btn.widget, RGB(0x1, 0x2, 0x3));
+  widget_set_border_color(&close_btn.widget, RGB(0x1, 0x2, 0x3));
+  widget_button_set_handler(&close_btn, close_handler);
 
   /* Add a frame. */
   widget_frame_init(&frame, &apinfo_modal.tile, 5, 45, 230, 185);
