@@ -9,6 +9,7 @@
 /* BLE */
 #include "esp_nimble_hci.h"
 #include "esp_event.h"
+#include "esp_err.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "host/ble_hs.h"
@@ -134,7 +135,7 @@ uint8_t ble_device_get_version(void);
 uint16_t ble_device_get_compid(void);
 uint16_t ble_device_get_soft(void);
 
-void ble_enter_critical_section(void);
+esp_err_t ble_enter_critical_section(void);
 void ble_leave_critical_section(void);
 
 #endif /* __INC_BLE_H */

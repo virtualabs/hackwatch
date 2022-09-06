@@ -455,146 +455,156 @@ int IRAM_ATTR on_ble_gap_event(struct ble_gap_event *event, void *arg)
             {
               //ESP_LOGI(TAG, "received an advertising report");
               
-              ble_enter_critical_section();
-
-              /* Check if we got a new device. */
-              for (i=0; i<g_devices_nb; i++)
+              if (ble_enter_critical_section() == ESP_OK)
               {
-                if (!memcmp(&g_devices[i].address.val, &event->disc.addr.val, 6))
+                /* Check if we got a new device. */
+                for (i=0; i<g_devices_nb; i++)
                 {
-                  /* Parse advertising data to extract name. */
-                  ble_adv_extract_name((uint8_t *)event->disc.data, event->disc.length_data, g_devices[i].psz_name, BLE_DEVICE_NAME_MAXSIZE);
-
-                  /* Device has been found. */
-                  b_device_known = true;
-
-                  /* Update freshness. */
-                  g_devices[i].freshness = BLE_FRESHNESS_DEFAULT;
-                }
-                else
-                {
-                  if (g_devices[i].freshness == 0)
+                  if (!memcmp(&g_devices[i].address.val, &event->disc.addr.val, 6))
                   {
-                    /* Remove device from list. */
-                    if (i == (g_devices_nb - 1))
-                    {
-                      g_devices_nb--;
-                    }
-                    else
-                    {
-                      memcpy((void *)&g_devices[i], (void *)&g_devices[i+1], sizeof(ble_device_t) * (g_devices_nb - i - 1));
-                      g_devices_nb--;
+                    /* Parse advertising data to extract name. */
+                    ble_adv_extract_name((uint8_t *)event->disc.data, event->disc.length_data, g_devices[i].psz_name, BLE_DEVICE_NAME_MAXSIZE);
 
-                      /* Process again the same item as we replaced it with the next item. */
-                      i--;
-                    }
+                    /* Device has been found. */
+                    b_device_known = true;
 
+                    /* Update freshness. */
+                    g_devices[i].freshness = BLE_FRESHNESS_DEFAULT;
                   }
                   else
                   {
-                    g_devices[i].freshness--;
+                    if (g_devices[i].freshness == 0)
+                    {
+                      /* Remove device from list. */
+                      if (i == (g_devices_nb - 1))
+                      {
+                        g_devices_nb--;
+                      }
+                      else
+                      {
+                        memcpy((void *)&g_devices[i], (void *)&g_devices[i+1], sizeof(ble_device_t) * (g_devices_nb - i - 1));
+                        g_devices_nb--;
+
+                        /* Process again the same item as we replaced it with the next item. */
+                        i--;
+                      }
+
+                    }
+                    else
+                    {
+                      g_devices[i].freshness--;
+                    }
                   }
                 }
-              }
 
-              /* Don't notify already known devices. */
-              if (b_device_known)
-              {
-                //printf("Device known, exiting.\r\n");
-                ble_leave_critical_section();
-                return 0;
-              }
+                /* Don't notify already known devices. */
+                if (b_device_known)
+                {
+                  //printf("Device known, exiting.\r\n");
+                  ble_leave_critical_section();
+                  return 0;
+                }
 
-              /* Add device to list, if a slot remains. */
-              if (g_devices_nb < BLESCAN_DEVICES_MAX)
-              {
-                /* Debug: show AD records for device. */
-                ESP_LOGI(TAG, "Device found: %02x:%02x:%02x:%02x:%02x:%02x",
-                event->disc.addr.val[5],
-                event->disc.addr.val[4],
-                event->disc.addr.val[3],
-                event->disc.addr.val[2],
-                event->disc.addr.val[1],
-                event->disc.addr.val[0]
+                /* Add device to list, if a slot remains. */
+                if (g_devices_nb < BLESCAN_DEVICES_MAX)
+                {
+                  /* Debug: show AD records for device. */
+                  ESP_LOGI(TAG, "Device found: %02x:%02x:%02x:%02x:%02x:%02x",
+                  event->disc.addr.val[5],
+                  event->disc.addr.val[4],
+                  event->disc.addr.val[3],
+                  event->disc.addr.val[2],
+                  event->disc.addr.val[1],
+                  event->disc.addr.val[0]
+                  );
+                  
+                  printf("AD records: ");
+                  for (j=0; j<event->disc.length_data; j++)
+                  {
+                    printf("%02x", event->disc.data[j]);
+                  }
+                  printf("\r\n");
+
+                  /* Classify device based on its AD records. */
+                  g_devices[i].device_type = ble_adv_classify((uint8_t *)event->disc.data, event->disc.length_data);
+
+                  /* Copy bluetooth address. */
+                  memcpy(&g_devices[g_devices_nb].address, &event->disc.addr, sizeof(ble_addr_t));
+
+                  /* Save RSSI. */
+                  g_devices[g_devices_nb].i8_rssi = event->disc.rssi;
+                  
+                  /* No device name by default. */
+                  g_devices[i].psz_name[0] = '\0';
+
+                  /* Set freshness. */
+                  g_devices[i].freshness = BLE_FRESHNESS_DEFAULT;
+
+                  /* Parse advertising data to extract name. */
+                  if (ble_adv_extract_name(
+                    (uint8_t *)event->disc.data,
+                    event->disc.length_data,
+                    g_devices[g_devices_nb++].psz_name,
+                    BLE_DEVICE_NAME_MAXSIZE) > 0)
+                  {
+                    //printf("Device found: %s\n", g_devices[i].psz_name);
+                  }
+                }
+
+                /* Post a BLE_DEVICE_FOUND event. */
+                esp_event_post_to(
+                  g_ble_ctrl.evt_loop_handle,
+                  BLE_CTRL_EVENT,
+                  BLE_DEVICE_FOUND,
+                  &g_devices[g_devices_nb-1],
+                  sizeof(ble_device_t *),
+                  portMAX_DELAY
                 );
-                
-                printf("AD records: ");
-                for (j=0; j<event->disc.length_data; j++)
-                {
-                  printf("%02x", event->disc.data[j]);
-                }
-                printf("\r\n");
 
-                /* Classify device based on its AD records. */
-                g_devices[i].device_type = ble_adv_classify((uint8_t *)event->disc.data, event->disc.length_data);
-
-                /* Copy bluetooth address. */
-                memcpy(&g_devices[g_devices_nb].address, &event->disc.addr, sizeof(ble_addr_t));
-
-                /* Save RSSI. */
-                g_devices[g_devices_nb].i8_rssi = event->disc.rssi;
-                
-                /* No device name by default. */
-                g_devices[i].psz_name[0] = '\0';
-
-                /* Set freshness. */
-                g_devices[i].freshness = BLE_FRESHNESS_DEFAULT;
-
-                /* Parse advertising data to extract name. */
-                if (ble_adv_extract_name(
-                  (uint8_t *)event->disc.data,
-                  event->disc.length_data,
-                  g_devices[g_devices_nb++].psz_name,
-                  BLE_DEVICE_NAME_MAXSIZE) > 0)
-                {
-                  //printf("Device found: %s\n", g_devices[i].psz_name);
-                }
+                ble_leave_critical_section();
               }
-
-              /* Post a BLE_DEVICE_FOUND event. */
-              esp_event_post_to(
-                g_ble_ctrl.evt_loop_handle,
-                BLE_CTRL_EVENT,
-                BLE_DEVICE_FOUND,
-                &g_devices[g_devices_nb-1],
-                sizeof(ble_device_t *),
-                portMAX_DELAY
-              );
-
-              ble_leave_critical_section();
+              else
+              {
+                ESP_LOGI(TAG, "ble_enter_critical_section() failed");
+              }
             }
             break;
 
           case BLE_HCI_ADV_RPT_EVTYPE_SCAN_RSP:
             {
               //ESP_LOGI(TAG, "received a scan response");
-              ble_enter_critical_section();
-
-              /* Check if we got a new device. */
-              for (i=0; i<g_devices_nb; i++)
+              if (ble_enter_critical_section() == ESP_OK)
               {
-                if (!memcmp(&g_devices[i].address.val, &event->disc.addr.val, 6))
+                /* Check if we got a new device. */
+                for (i=0; i<g_devices_nb; i++)
                 {
-                  /* Parse advertising data to extract name. */
-                  if (ble_adv_extract_name((uint8_t *)event->disc.data, event->disc.length_data, g_devices[i].psz_name, BLE_DEVICE_NAME_MAXSIZE) > 0)
+                  if (!memcmp(&g_devices[i].address.val, &event->disc.addr.val, 6))
                   {
-                    /* Post a BLE_DEVICE_FOUND event. */
-                    esp_event_post_to(
-                      g_ble_ctrl.evt_loop_handle,
-                      BLE_CTRL_EVENT,
-                      BLE_DEVICE_FOUND,
-                      &g_devices[i],
-                      sizeof(ble_device_t *),
-                      portMAX_DELAY
-                    );
+                    /* Parse advertising data to extract name. */
+                    if (ble_adv_extract_name((uint8_t *)event->disc.data, event->disc.length_data, g_devices[i].psz_name, BLE_DEVICE_NAME_MAXSIZE) > 0)
+                    {
+                      /* Post a BLE_DEVICE_FOUND event. */
+                      esp_event_post_to(
+                        g_ble_ctrl.evt_loop_handle,
+                        BLE_CTRL_EVENT,
+                        BLE_DEVICE_FOUND,
+                        &g_devices[i],
+                        sizeof(ble_device_t *),
+                        portMAX_DELAY
+                      );
+                    }
+
+                    ble_leave_critical_section();
+                    return 0;
                   }
-
-                  ble_leave_critical_section();
-                  return 0;
                 }
+                
+                ble_leave_critical_section();
               }
-
-              ble_leave_critical_section();
+              else
+              {
+                ESP_LOGI(TAG, "ble_enter_critical_section() failed");
+              }
             }
             break;
 
@@ -879,8 +889,8 @@ int ble_disconnect(void)
 
   if (g_ble_ctrl.b_connected)
   {
-    _llc_llcp_terminate_ind_pdu_send(g_ble_ctrl.conn_handle, 0x00);
-    //res = ble_gap_terminate(g_ble_ctrl.conn_handle, 0x00);
+    //_llc_llcp_terminate_ind_pdu_send(g_ble_ctrl.conn_handle, 0x00);
+    res = ble_gap_terminate(g_ble_ctrl.conn_handle, 0x00);
   }
   //_llc_llcp_terminate_ind_pdu_send(g_ble_ctrl.conn_handle, 0x00);
 
@@ -920,10 +930,14 @@ int ble_get_devices_nb(void)
  * @brief: Enter BLE critical section (mutex)
  **/
 
-void ble_enter_critical_section(void)
+esp_err_t ble_enter_critical_section(void)
 {
-  //printf("Take mutex\n");
-  xSemaphoreTake(g_ble_ctrl.mutex, portMAX_DELAY);
+  if (xSemaphoreTake(g_ble_ctrl.mutex, 100/portTICK_PERIOD_MS) == pdTRUE)
+  {
+    return ESP_OK;
+  }
+  else
+    return ESP_FAIL;
 }
 
 

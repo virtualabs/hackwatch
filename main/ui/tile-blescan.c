@@ -312,43 +312,45 @@ int blescan_widget_list_event_handler(widget_t *p_widget, widget_event_t event, 
   widget_listbox_t *p_listbox = (widget_listbox_t *)p_widget;
   blescan_widget_listitem_t *p_listitem;
 
-  ble_enter_critical_section();
-
-  switch (event)
+  if (ble_enter_critical_section() == ESP_OK)
   {
+    switch (event)
+    {
 
-    case LB_ITEM_SELECTED:
-      {
-        /* Retrieve selected item. */
-        p_listitem = (blescan_widget_listitem_t *)p_listbox->p_selected_item;
-        if (p_listitem != NULL)
+      case LB_ITEM_SELECTED:
         {
-          ESP_LOGI(TAG, "Item selected !");
-          
-          /* Clear modal. */
-          modal_bleinfo_clear();
-          modal_bleinfo_wait();
+          /* Retrieve selected item. */
+          p_listitem = (blescan_widget_listitem_t *)p_listbox->p_selected_item;
+          if (p_listitem != NULL)
+          {
+            ESP_LOGI(TAG, "Item selected !");
+            
+            /* Clear modal. */
+            modal_bleinfo_clear();
+            modal_bleinfo_wait();
 
-          /* Connect to the selected device. */
-          ble_connect(p_listitem->p_device);
+            /* Connect to the selected device. */
+            ble_connect(p_listitem->p_device);
 
-          /* Set modal title. */
-          modal_bleinfo_set_title(p_listitem->p_device);
+            /* Set modal title. */
+            modal_bleinfo_set_title(p_listitem->p_device);
 
-          /* Show modal. */
-          ui_set_modal(p_bleinfo_modal);
+            /* Show modal. */
+            ui_set_modal(p_bleinfo_modal);
+          }
+
+          b_processed = true;
         }
+        break;
 
-        b_processed = true;
-      }
-      break;
+      default:
+        break;
+    }
 
-    default:
-      break;
+    /* Event processed (or not) */
+    ble_leave_critical_section();
   }
 
-  /* Event processed (or not) */
-  ble_leave_critical_section();
   return b_processed?WE_PROCESSED:pfn_lb_event_handler(p_widget, event, x, y, velocity);
 }
 
@@ -378,27 +380,29 @@ void on_device_event(void *event_handler_arg, esp_event_base_t event_base, int32
 
     case BLE_DEVICE_FOUND:
       {
-        ble_enter_critical_section();
-        ui_enter_critical_section();
-        
-        /* Empty list. */
-        for (i=0; i<10; i++)
+        if (ble_enter_critical_section() == ESP_OK)
         {
-          widget_listbox_remove(&lb_devices, (widget_t *)&g_devices_names[i]);
-        }
+          ui_enter_critical_section();
+          
+          /* Empty list. */
+          for (i=0; i<10; i++)
+          {
+            widget_listbox_remove(&lb_devices, (widget_t *)&g_devices_names[i]);
+          }
 
-        g_ble_devices_nb = ble_get_devices_nb();
-        
-        /* Add device. */
-        for (i=0; i<g_ble_devices_nb; i++)
-        {
-          peer = ble_get_device(i);
-          blescan_widget_listitem_update(&g_devices_names[i], peer);
-          widget_listbox_add(&lb_devices, (widget_t *)&g_devices_names[i]);
+          g_ble_devices_nb = ble_get_devices_nb();
+          
+          /* Add device. */
+          for (i=0; i<g_ble_devices_nb; i++)
+          {
+            peer = ble_get_device(i);
+            blescan_widget_listitem_update(&g_devices_names[i], peer);
+            widget_listbox_add(&lb_devices, (widget_t *)&g_devices_names[i]);
+          }
+          
+          ui_leave_critical_section();
+          ble_leave_critical_section();
         }
-        
-        ui_leave_critical_section();
-        ble_leave_critical_section();
       }
       break;
 
