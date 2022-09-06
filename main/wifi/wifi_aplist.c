@@ -31,7 +31,7 @@ void wifi_aplist_clean(wifi_aplist_t *p_list)
   wifi_ap_t *p_item;
   wifi_ap_t *p_previous;
   
-  ESP_LOGD(TAG, "Clean list");
+  ESP_LOGI(TAG, "Clean list");
 
   p_previous = NULL;
   p_item = p_list->p_first;
@@ -166,9 +166,6 @@ void wifi_aplist_add(wifi_aplist_t *p_list, wifi_ap_record_t *ap)
         p_item->gp_cipher = ap->group_cipher;
         p_item->freshness = WIFI_AP_FRESHNESS_MAX;
 
-        /* Clean list. */
-        wifi_aplist_clean(p_list);
-
         /* Item added, exit. */
         return;
       }
@@ -195,8 +192,6 @@ void wifi_aplist_add(wifi_aplist_t *p_list, wifi_ap_record_t *ap)
         p_anchor->p_next = p_item;
         p_list->count++;
 
-        /* Clean list. */
-        wifi_aplist_clean(p_list);
       }
     }
   }

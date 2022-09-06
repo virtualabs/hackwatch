@@ -1,7 +1,7 @@
 #ifndef __INC_WIFI_AP_H
 #define __INC_WIFI_AP_H
 
-#define WIFI_APLIST_MAX_NUMBER  10
+#define WIFI_APLIST_MAX_NUMBER  15
 #define WIFI_AP_FRESHNESS_MAX   20
 #define WIFI_AP_FRESHNESS_OLD   5
 
@@ -26,6 +26,7 @@ typedef struct {
 
 void wifi_aplist_init(wifi_aplist_t *p_list);
 void wifi_aplist_add(wifi_aplist_t *p_list, wifi_ap_record_t *ap);
+void wifi_aplist_clean(wifi_aplist_t *p_list);
 wifi_ap_t *wifi_aplist_enum_first(wifi_aplist_t *p_list);
 wifi_ap_t *wifi_aplist_enum_next(wifi_ap_t *ap);
 

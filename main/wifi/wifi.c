@@ -6,7 +6,7 @@
 #include "dissect.h"
 
 #define TAG "wifi_ctrl"
-#define DEFAULT_SCAN_LIST_SIZE 10
+#define DEFAULT_SCAN_LIST_SIZE WIFI_APLIST_MAX_NUMBER
 
 ESP_EVENT_DEFINE_BASE(WIFI_CTRL_EVENT);
 
@@ -570,6 +570,7 @@ static void wifi_scanner_event_handler(void* arg, esp_event_base_t event_base, i
 {
   wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE];
   uint16_t ap_count;
+  esp_err_t ret;
   int j;
 
   if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_SCAN_DONE)
@@ -579,7 +580,8 @@ static void wifi_scanner_event_handler(void* arg, esp_event_base_t event_base, i
 
     /* Get APs */
     ap_count = DEFAULT_SCAN_LIST_SIZE;
-    if (esp_wifi_scan_get_ap_records(&ap_count, ap_info) == ESP_OK)
+    ret = esp_wifi_scan_get_ap_records(&ap_count, ap_info);
+    if (ret == ESP_OK)
     {
       ESP_LOGI(TAG, "got APs (%d), parse ...", ap_count);
       
@@ -605,6 +607,14 @@ static void wifi_scanner_event_handler(void* arg, esp_event_base_t event_base, i
         ESP_LOGI(TAG, "WIFI_SCANNER_EVENT_APLIST_UPDATED event sent.");
       }
     }
+    else
+    {
+      /* Call to esp_wifi_scan_get_ap_records() failed, clean AP list. */
+      ESP_LOGE(TAG, "esp_wifi_scan_get_ap_records() failed with error %d", ret);
+    }
+
+    /* Clean AP list */
+    wifi_aplist_clean(&g_wifi_ctrl.ap_list);
     
     esp_wifi_scan_start(&g_wifi_ctrl.scan_config, false);
     g_wifi_ctrl.scan_state = SCANNER_RUNNING;

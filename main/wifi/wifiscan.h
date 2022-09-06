@@ -24,7 +24,7 @@
 #define WSCAN_RSSI_GOOD_COLOR  RGB(0, 3, 0)
 
 
-#define WSCAN_MAX_APS   10
+#define WSCAN_MAX_APS  WIFI_APLIST_MAX_NUMBER
 
 typedef enum {
   WS_EVENT_SELECTED
