@@ -12,6 +12,8 @@ ESP_EVENT_DEFINE_BASE(WIFI_CTRL_EVENT);
 
 wifi_controller_t g_wifi_ctrl;
 
+wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE];
+
 typedef struct {
 	wifi_ieee80211_mac_hdr_t hdr;
 	uint8_t payload[0]; /* network data ended with 4 bytes csum (CRC32) */
@@ -568,7 +570,6 @@ void wifi_scanner_enable(void)
 
 static void wifi_scanner_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-  wifi_ap_record_t ap_info[DEFAULT_SCAN_LIST_SIZE];
   uint16_t ap_count;
   esp_err_t ret;
   int j;
@@ -581,6 +582,7 @@ static void wifi_scanner_event_handler(void* arg, esp_event_base_t event_base, i
     /* Get APs */
     ap_count = DEFAULT_SCAN_LIST_SIZE;
     ret = esp_wifi_scan_get_ap_records(&ap_count, ap_info);
+    ESP_LOGI(TAG, "esp_wifi_scan_get_ap_records()=%d", ret);
     if (ret == ESP_OK)
     {
       ESP_LOGI(TAG, "got APs (%d), parse ...", ap_count);
@@ -614,6 +616,7 @@ static void wifi_scanner_event_handler(void* arg, esp_event_base_t event_base, i
     }
 
     /* Clean AP list */
+    ESP_LOGI(TAG, "wifi_aplist_clean");
     wifi_aplist_clean(&g_wifi_ctrl.ap_list);
     
     esp_wifi_scan_start(&g_wifi_ctrl.scan_config, false);
