@@ -17,6 +17,11 @@ menu "HackWatch"
     depends on INCLUDE_WIFI
     bool "Rogue AP generator"
     default y
+  
+  config WIFI_DEAUTH
+    depends on INCLUDE_WIFI
+    bool "Deauth"
+    default y
 
   config INCLUDE_BLE
     bool "Include Bluetooth Low Energy tools"

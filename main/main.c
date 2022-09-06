@@ -15,6 +15,7 @@
 #include "ui/tile-settings.h"
 #include "ui/tile-channels.h"
 #include "ui/tile-rogueap.h"
+#include "ui/tile-deauth.h"
 #include "ui/tile-tvbgone.h"
 
 /* Include WiFi icon if needed. */
@@ -169,6 +170,12 @@ void main_ui(void *parameter)
 
     #ifdef CONFIG_WIFI_ROGUEAP
       p_sub_current = menu_add_tile(&wifi_tile, p_sub_current, tile_rogueap_init);
+      if (p_sub_first == NULL)
+        p_sub_first = p_sub_current;
+    #endif
+
+    #ifdef CONFIG_WIFI_DEAUTH
+      p_sub_current = menu_add_tile(&wifi_tile, p_sub_current, tile_deauth_init);
       if (p_sub_first == NULL)
         p_sub_first = p_sub_current;
     #endif
