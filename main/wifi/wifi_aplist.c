@@ -105,7 +105,15 @@ wifi_ap_t *wifi_aplist_alloc_item(wifi_ap_record_t *ap)
     for (i=0; i<6; i++)
       p_item->bssid[i] = ap->bssid[i];
 
-    strncpy((char*)p_item->essid, (char*)ap->ssid, 33);
+    if (p_item->essid[0] == 0)
+    {
+        strncpy((char*)p_item->essid, "<hidden>", 33);
+    }
+    else
+    {
+        strncpy((char*)p_item->essid, (char*)ap->ssid, 33);
+    }
+
     p_item->rssi = ap->rssi;
     p_item->channel = ap->primary;
     p_item->auth_mode = ap->authmode;
@@ -157,8 +165,10 @@ void wifi_aplist_add(wifi_aplist_t *p_list, wifi_ap_record_t *ap)
       if (!memcmp(p_item->bssid, ap->bssid, 6))
       {
         ESP_LOGD(TAG, "found this ap, updating data ...");
+        
         /* Yep, update its info. */
         memcpy(p_item->essid, ap->ssid, 33);
+
         p_item->rssi = ap->rssi;
         p_item->channel = ap->primary;
         p_item->auth_mode = ap->authmode;
