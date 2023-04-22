@@ -35,4 +35,8 @@ menu "HackWatch"
   config INCLUDE_IR
     bool "Infrared tools"
     default y
+
+  config INCLUDE_ANTP
+    bool "ANT+ tools"
+    default n
 endmenu

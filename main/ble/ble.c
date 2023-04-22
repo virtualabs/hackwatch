@@ -677,12 +677,12 @@ esp_err_t ble_ctrl_event_handler_register(
   );
 }
 
-int on_llcp_pdu_handler(uint16_t header, uint8_t *p_pdu, int length)
+int on_llcp_pdu_handler(int packet_num, uint16_t header, uint8_t *p_pdu, int length)
 {
   uint8_t ble_version;
   uint16_t *comp_id;
   uint16_t *fw_version;
-  ble_device_version_t *p_dev_version = NULL;
+  //ble_device_version_t *p_dev_version = NULL;
 
   /* Block VERSION_IND control PDU. */
   if (p_pdu[0] == 0x0C)
@@ -795,7 +795,7 @@ int ble_scan_start(void)
 
   struct ble_gap_disc_params scan_params = {
     .itvl = 0, .window = 0, .filter_policy = 0,
-    .limited = 0, .passive = 0, .filter_duplicates = 0
+    .limited = 0, .passive = 1, .filter_duplicates = 0
   };
 
   /* Make sure we have proper identity address set (public preferred) */

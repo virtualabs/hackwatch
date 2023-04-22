@@ -35,6 +35,11 @@
   #include "img/ir_icon_8bpp.h"
 #endif
 
+/* Include ANTP icon if needed. */
+#ifdef CONFIG_INCLUDE_ANTP
+  #include "img/antplus_icon_8bpp.h"
+#endif
+
 #include "img/settings_icon_8bpp.h"
 
 
@@ -73,6 +78,13 @@ void main_ui(void *parameter)
     image_t *ir;
     widget_image_t ir_img;
     widget_label_t ir_lbl;
+  #endif
+
+  #ifdef CONFIG_INCLUDE_ANTP
+    tile_t antp_tile;
+    image_t *antp;
+    widget_image_t antp_img;
+    widget_label_t antp_lbl;
   #endif
 
   /* Main screen */
@@ -118,6 +130,16 @@ void main_ui(void *parameter)
     widget_image_init(&ir_img, &ir_tile, 70, (240-88)/2 - 20, 100, 88, ir);
     widget_label_init(&ir_lbl, &ir_tile, 100, 150, 120, 50, "IR");
     p_tile_current = menu_add_menu(p_tile_current, &ir_tile);
+  #endif
+
+  /* Add ANT+ menu (if enabled). */
+  #ifdef CONFIG_INCLUDE_ANTP
+    /* Add ANT+ menu. */
+    tile_init(&antp_tile, NULL);
+    antp = load_image(antplus_icon);
+    widget_image_init(&antp_img, &antp_tile, 70, (240-88)/2 - 20, 100, 88, antp);
+    widget_label_init(&antp_lbl, &antp_tile, 100, 150, 120, 50, "ANT+");
+    p_tile_current = menu_add_menu(p_tile_current, &antp_tile);
   #endif
 
   /* Add Settings menu. */

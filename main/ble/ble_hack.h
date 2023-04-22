@@ -12,54 +12,45 @@
 /* Enable this if you want more verbose messages. */
 //#define BLE_HACK_DEBUG        0
 
-#define LLC_LLCP_SEND_ADDR        (0x40043ed4)
-#define LLC_LLCP_TESTER_SEND_ADDR (0x400445e4)
-#define LLC_ENV_ADDR              (0x3ffb96d0)
-#define IP_FUNCS_ARRAY_ADDR       (0x3ffae70c)
-#define BLE_RX_BUFFER_ADDR        (0x3ffb0000)
-#define BLE_RX_PKT_STATUS         (0x3ffb094a)
-#define BLE_RX_PKT_HDR_ADDR       (0x3ffb094c)
-#define BLE_RX_CUR_FIFO_ADDR      (0x3ffb8d74)
-#define BLE_RX_DESC_ADDR          (0x3ffb0950)
+#define LLC_LLCP_SEND_ADDR              (0x40043ed4)
+#define LLC_LLCP_TESTER_SEND_ADDR       (0x400445e4)
+#define LLC_ENV_ADDR                    (0x3ffb96d0)
+#define IP_FUNCS_ARRAY_ADDR             (0x3ffae70c)
+#define BLE_RX_BUFFER_ADDR              (0x3ffb0000)
+#define BLE_RX_PKT_STATUS               (0x3ffb094a)
+#define BLE_RX_PKT_HDR_ADDR             (0x3ffb094c)
+#define BLE_RX_CUR_FIFO_ADDR            (0x3ffb8d74)
+#define BLE_RX_DESC_ADDR                (0x3ffb0950)
+#define FREQUENCY_TABLE_IN_EM_OFFSET    (0x40)
+#define RX_SCAN_CONFIG_INDEX            (641)
+#define CONTROL_STRUCTURE_IN_EM_OFFSET  (0x43A)
+#define FIFO_INDEX_OFFSET               (0x5c8)
+#define HEADER_IN_EM_OFFSET             (0x94c)
+#define PACKET_STATUS_IN_EM_OFFSET      (0x94a)
+#define RX_DESCRIPTOR_IN_EM_OFFSET      (0x950)
 
-#define HOOK_FORWARD          0x1
-#define HOOK_BLOCK            0x0
+#define CNTL_REG_IN_CS_OFFSET           (0)
+#define SYNC_REG_IN_CS_OFFSET           (6)
+#define HOPCTRL_REG_IN_CS_OFFSET        (16)
+#define RXMAXBUF_REG_IN_CS_OFFSET       (34)
+#define TXDESCPTR_REG_IN_CS_OFFSET      (22)
 
-/* ROM hooking helpers. */
-#define HOOKTYPE(x)           F_r_##x
-#define HOOKFUNCPTR(x)        pfn_##x
-#define ROM_HOOK(func, args...)   typedef int (*HOOKTYPE(func))(args); \
-                                  HOOKTYPE(func) pfn_##func = NULL;
+#define RWBLECNTL                 (*(uint32_t *)(0x3ff71200))
+#define RWBLECONF                 (*(uint32_t *)(0x3ff71208))
+#define BLE_INTCNTL               (*(uint32_t *)(0x3ff7120C))
+#define BLE_INTSTAT               (*(uint32_t *)(0x3ff71210))
+#define BLE_INTRAWSTAT            (*(uint32_t *)(0x3ff71214))
+#define BLE_ERRORTYPESTAT         (*(uint32_t *)(0x3ff71260))
 
-#define INSTALL_HOOK(id, func)    HOOKFUNCPTR(func)=(void *)(((uint32_t *)g_ip_funcs_p)[id]); \
-                                  printf("Hooking function id %d, replacing 0x%08x by 0x%08x\r\n", id, ((uint32_t *)g_ip_funcs_p)[id], (uint32_t)_##func);  \
-                                  ((uint32_t *)g_ip_funcs_p)[id]=(uint32_t)_##func;
+/* Test modes formats */
+#define LLD_TEST_MODE_RX          0x1D
+#define LLD_TEST_MODE_TX          0x1E
 
-typedef enum {
-  LL_CONNECTION_UPDATE_REQ,
-  LL_CHANNEL_MAP_REQ,
-  LL_TERMINATE_IND,
-  LL_ENC_REQ,
-  LL_ENC_RSP,
-  LL_START_ENC_REQ,
-  LL_START_ENC_RSP,
-  LL_UNKNOWN_RSP,
-  LL_FEATURE_REQ,
-  LL_FEATURE_RSP,
-  LL_PAUSE_ENC_REQ,
-  LL_PAUSE_ENC_RSP,
-  LL_VERSION_IND,
-  LL_REJECT_IND,
-  LL_SLAVE_FEATURE_REQ,
-  LL_CONNECTION_PARAM_REQ,
-  LL_CONNECTION_PARAM_RSP,
-  LL_REJECT_IND_EXT,
-  LL_PING_REQ,
-  LL_PING_RSP,
-  LL_LENGTH_REQ,
-  LL_LENGTH_RSP,
-  LL_TESTER_SEND=0xFF
-} llcp_pdu_type;
+#define HOOK_FORWARD              0x1
+#define HOOK_BLOCK                0x0
+
+#define ANT_PAYLOAD_MAX_SIZE      17
+
 
 /**
  * Common list header structure (required by co_list* functions).
@@ -264,25 +255,6 @@ struct ea_interval_tag
 
 
 /**
- * Link-layer Controller PDU tag structure
- * 
- * This structure is used to send Control PDU.
- **/
-
-struct llcp_pdu_tag
-{
-    /// List element for chaining
-    struct co_list_hdr hdr;
-    /// Node index
-    uint32_t idx;
-    /// Pointer on the pdu to send
-    void *ptr;
-    uint16_t pdu_length;
-    /// opcode
-    uint8_t opcode;
-};
-
-/**
  * Link-layer Driver main structure (contains everything about LLD)
  **/
 
@@ -349,23 +321,6 @@ struct em_buf_node
     uint16_t idx;
     /// EM buffer pointer
     uint16_t buf_ptr;
-};
-
-/**
- * HCI data TX PDU structure
- * 
- * This structure is used by the BLE controller to send Data PDU.
- **/
-
-struct hci_acl_data_tx
-{
-    /// connection handle
-    uint16_t    conhdl;
-    /// broadcast and packet boundary flag
-    uint16_t     pb_bc_flag;
-    /// length of the data
-    uint16_t    length;
-    struct em_buf_node *buf;
 };
 
 /**
@@ -438,114 +393,53 @@ struct em_buf_env_tag
     uint8_t rx_current;
 };
 
-
-/**
- * Link-layer control procedures PDU details.
- **/
-
 typedef struct {
-  llcp_pdu_type opcode;
-  uint16_t conhdl;
-} llcp_opinfo;
+    /* Shall we forward this packet ? */
+    bool b_forward;
+    /* Packet header */
+    uint32_t header;
+    /* Packet length. */
+    uint8_t length;
+    /* Packet PDU. */
+    uint8_t pdu[256];
+} esp_packet_processed_t;
 
+/* Available datarates (1Mbps or 2Mbps). */
+typedef enum {
+    DATARATE_1M = 0,
+    DATARATE_2M = 1
+} datarate_t;
+
+
+/* Available radio modes. */
+typedef enum {
+    MODE_RX = 0,
+    MODE_TX = 1,
+    MODE_JAMMER = 2
+} radio_mode_t;
+
+/* Structure storing information about the radio configuration. */
 typedef struct {
-  llcp_opinfo header;
-} llcp_version_params;
+    uint32_t sync_word;
+    uint32_t frequency;
+    bool swapping;
+    datarate_t data_rate;
+    mode_t mode;
+    bool enabled;
+} radio_config_t;
 
+/* Structure representing a received packet and its metadata. */
 typedef struct {
-  llcp_opinfo header;
-} llcp_ch_map_update_params;
+  uint8_t *packet;
+  size_t total_size;
+  int8_t rssi;
+  int frequency;
+} rx_packet_t;
 
-typedef struct {
-  llcp_opinfo header;
-} llcp_pause_enc_req_params;
-
-typedef struct {
-  llcp_opinfo header;
-} llcp_pause_enc_rsp_params;
-
-typedef struct {
-  llcp_opinfo header;
-  uint16_t rej_opcode;
-  uint8_t reason;
-} llcp_reject_params;
-
-typedef struct {
-  llcp_opinfo header;
-  struct hci_le_start_enc_cmd *param;
-} llcp_enc_req_params;
-
-typedef struct {
-  llcp_opinfo header;
-  struct llcp_enc_req *param;
-} llcp_enc_rsp_params;
-
-typedef struct {
-  llcp_opinfo header;
-} llcp_start_enc_rsp_params;
-
-typedef struct {
-  llcp_opinfo header;
-  struct llcp_con_upd_ind *param;
-} llcp_con_update_params;
-
-typedef struct {
-  llcp_opinfo header;
-  struct llc_con_upd_req_ind *param;
-} llcp_con_param_req_params;
-
-typedef struct {
-  llcp_opinfo header;
-  struct llc_con_upd_req_ind *param;
-} llcp_con_param_rsp_params;
-
-typedef struct {
-  llcp_opinfo header;
-} llcp_feats_req_params;
-
-typedef struct {
-  llcp_opinfo header;
-} llcp_feats_rsp_params;
-
-typedef struct {
-  llcp_opinfo header;
-} llcp_start_enc_params;
-
-typedef struct {
-  llcp_opinfo header;
-  uint8_t err_code;
-} llcp_terminate_params;
-
-typedef struct {
-  llcp_opinfo header;
-  uint8_t unk_type;
-} llcp_unknown_rsp_params;
-
-typedef struct {
-  llcp_opinfo header;
-} llcp_ping_req_params;
-
-typedef struct {
-  llcp_opinfo header;
-} llcp_ping_rsp_params;
-
-typedef struct {
-  llcp_opinfo header;
-} llcp_length_req_params;
-
-typedef struct {
-  llcp_opinfo header;
-} llcp_length_rsp_params;
-
-typedef struct {
-  llcp_opinfo header;
-  uint8_t length;
-  uint8_t *data;
-} llcp_tester_send_params;
-
-typedef int (*FBLEHACK_IsrCallback)(uint16_t header, uint8_t *p_pdu, int length);
-typedef int (*FBLEHACK_CtlCallback)(llcp_opinfo *p_llcp_pdu);
+typedef int (*FBLEHACK_IsrCallback)(int packet_num, uint16_t header, uint8_t *p_pdu, int length);
+typedef int (*FBLEHACK_RawCallback)(uint8_t *p_packet, size_t size, int8_t rssi, int frequency);
 typedef int (*F_rom_llc_llcp_send)(int conhdl, uint8_t *p_pdu, uint8_t opcode);
+typedef void (*FBLEHACK_ProgPacketsCallback)(void);
 
 /* Printf() equivalent required to display debug info when in ISR (callbacks). */
 int esp_rom_printf( const char *restrict format, ... );
@@ -556,18 +450,22 @@ void disconnect_nimble(void);
 
 void ble_hack_rx_control_pdu_handler(FBLEHACK_IsrCallback pfn_control_callback);
 void ble_hack_rx_data_pdu_handler(FBLEHACK_IsrCallback pfn_data_callback);
-void ble_hack_tx_control_pdu_handler(FBLEHACK_CtlCallback pfn_control_callback);
 void ble_hack_tx_data_pdu_handler(FBLEHACK_IsrCallback pfn_data_callback);
+void ble_hack_tx_prog_packets(FBLEHACK_ProgPacketsCallback pfn_prog_callback);
+void ble_hack_raw_packet_handler(FBLEHACK_RawCallback pfn_raw_callback);
+
+void set_packet_length(int packet_num, uint8_t length);
 
 /* Send a data PDU. */
-void send_data_pdu(int conhdl, void *p_pdu, int length);
-void send_raw_data_pdu(int conhdl, uint8_t llid, void *p_pdu, int length, bool can_be_freed);
+void send_raw_data_pdu(int conhdl, uint8_t llid, uint8_t *p_pdu, int length, bool can_be_freed);
 
-/* Send a control PDU. */
-void send_control_pdu(int conhdl, uint8_t *p_pdu, int length);
-int rom_llc_llcp_send(int conhdl, uint8_t *p_pdu, uint8_t opcode);
 
-void _llc_llcp_version_ind_pdu_send(uint16_t conhdl);
-void _llc_llcp_terminate_ind_pdu_send(uint16_t conhdl, uint8_t err_code);
+/** Raw packet **/
+void set_frequency(uint32_t frequency);
+void set_sync_word(uint32_t sync_word);
+void set_swapping(bool swapping);
+void set_data_rate(datarate_t datarate);
+void ble_hack_enable_raw(void);
+void ble_hack_disable_raw(void);
 
 #endif /* __INC_ESP32_BLE_HACK_H */
