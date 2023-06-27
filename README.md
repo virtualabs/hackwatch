@@ -20,9 +20,9 @@ T-Watch 2020 v1 has:
  * an IR LED (well, could be useful)
  * an embedded real-time clock (obviously, it's a watch !)
 
-T-Watch 2020 v2 is a bit diferent:
+T-Watch 2020 v2 is a bit different:
  * remove Max98357a I2S amplifier
- * add DVR2605L haptic vibration contoler 
+ * add DVR2605L haptic vibration controller 
  * add L76K GPS
  * add TF Card Holder
 
@@ -45,7 +45,7 @@ categories/tools navigation is done by swiping the screen :).
 
 Pressing the button on the right side of the watch will bring you back to the current category and then to
 the main screen. If this button is pressed when on the main screen (clock), the watch will go in deep sleep
-mode and can be wake up by pressing the button again.
+mode and can be woken up by pressing the button again.
 
 Provided tools
 --------------
